@@ -1,0 +1,73 @@
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const engine = require('../lib/engine');
+
+test('Zero-Blob Cloud Pointer: indexes iCloud/GDrive/OneDrive with $0.00 video egress and <15KB pointer', () => {
+  const p1 = engine.createCloudPointer({ title: 'iPhone 4K Reel B-Roll.mov', provider: 'icloud', rawSizeMb: 480 });
+  const p2 = engine.createCloudPointer({ title: 'Q3 Board Financial Pack.xlsx', provider: 'onedrive', domain: 'executive', rawSizeMb: 18 });
+  const p3 = engine.createCloudPointer({ title: 'Brand Sponsor Brief.pdf', provider: 'gdrive', domain: 'creator', rawSizeMb: 6 });
+
+  assert.equal(p1.osOrigin, 'iOS');
+  assert.equal(p2.osOrigin, 'Windows');
+  assert.equal(p3.osOrigin, 'Android');
+  assert.equal(p1.serverEgressCostUsd, 0.00);
+  assert.ok(p1.pointerKb < 15);
+  assert.ok(p1.externalUri.startsWith('icloud://'));
+  assert.ok(p2.externalUri.startsWith('onedrive://'));
+  assert.ok(p3.externalUri.startsWith('gdrive://'));
+});
+
+test('Multi-Stage Reminders: generates 4 upload stages for creators and 3 dossier stages for executives', () => {
+  const upload = engine.createCommandItem({
+    title: 'LinkedIn Authority Carousel #14',
+    domain: 'creator',
+    itemType: 'content_upload',
+    dueAt: '2026-11-12T08:30:00.000Z',
+  });
+  const report = engine.createCommandItem({
+    title: 'Q3 Board Pack Submission',
+    domain: 'executive',
+    itemType: 'report_deadline',
+    dueAt: '2026-11-12T09:00:00.000Z',
+  });
+
+  assert.equal(upload.reminders.length, 4);
+  assert.equal(upload.reminders[0].stage, 'film_cutoff');
+  assert.equal(upload.reminders[2].stage, 'prime_upload');
+  assert.equal(upload.isHardDeadline, false);
+
+  assert.equal(report.reminders.length, 3);
+  assert.equal(report.reminders[2].stage, 'hard_deadline');
+  assert.equal(report.isHardDeadline, true);
+});
+
+test('Collision Detector: flags when Executive Report and Creator Upload collide within 2 hours', () => {
+  const items = [
+    engine.createCommandItem({ id: 'c1', title: 'Q3 Board Report (OneDrive)', domain: 'executive', itemType: 'report_deadline', dueAt: '2026-11-12T09:00:00.000Z', isHardDeadline: true }),
+    engine.createCommandItem({ id: 'c2', title: 'LinkedIn Video Upload (iCloud)', domain: 'creator', itemType: 'content_upload', dueAt: '2026-11-12T09:45:00.000Z', isHardDeadline: false }),
+  ];
+  const collisions = engine.detectCollisions(items, 2);
+  assert.equal(collisions.length, 1);
+  assert.equal(collisions[0].gapMinutes, 45);
+  assert.ok(collisions[0].resolution.includes('LinkedIn Video Upload'));
+});
+
+test('1-Tap Cascade Reschedule: shifts flexible creator uploads +24h while locking hard executive/family deadlines', () => {
+  const items = [
+    engine.createCommandItem({ id: 'c1', title: 'Board Presentation', domain: 'executive', itemType: 'report_deadline', dueAt: '2026-11-12T09:00:00.000Z', isHardDeadline: true }),
+    engine.createCommandItem({ id: 'c2', title: 'IG Reel & LinkedIn Drop', domain: 'creator', itemType: 'content_upload', dueAt: '2026-11-12T09:30:00.000Z', isHardDeadline: false }),
+  ];
+  const res = engine.cascadeReschedule(items, 24);
+  assert.equal(res.shiftedCount, 1);
+  assert.equal(res.items[0].dueAt, '2026-11-12T09:00:00.000Z');
+  assert.equal(res.items[1].dueAt, '2026-11-13T09:30:00.000Z');
+  assert.equal(res.detectAfter || engine.detectCollisions(res.items, 2).length, 0);
+});
+
+test('Velvet Cadence Voice-to-Authority: transforms voice note + cloud proof asset into LinkedIn post, carousel, and video hook', () => {
+  const out = engine.voiceToAuthority('We cut quoting time from 14 days to 10 minutes by automating the BOQ layer.', 'OneDrive_Q3_Margin_Report.xlsx');
+  assert.ok(out.linkedinPost.includes('OneDrive_Q3_Margin_Report.xlsx'));
+  assert.equal(out.carouselSlides.length, 4);
+  assert.ok(out.shortVideoHook.includes('OneDrive_Q3_Margin_Report.xlsx'));
+});
