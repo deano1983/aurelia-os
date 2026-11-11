@@ -297,6 +297,65 @@ function copyVoicePart(part) {
 }
 
 let activeHandoffPayload = '';
+let lastInvoice = null;
+let lastPartnerKit = null;
+let deferredPwaPrompt = null;
+let speechRec = null;
+let isRecording = false;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPwaPrompt = e;
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+
+function installAppPrompt() {
+  if (deferredPwaPrompt) {
+    deferredPwaPrompt.prompt();
+    deferredPwaPrompt.userChoice.then(() => { deferredPwaPrompt = null; });
+    return;
+  }
+  showToast('PWA Ready: On iOS Safari tap Share -> Add to Home Screen; on Windows Edge/Chrome click Install in the address bar!');
+}
+
+function toggleVoiceDictation() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const btn = document.getElementById('micBtn');
+  if (!SR) {
+    showToast('Simulating 90s executive voice capture...');
+    document.getElementById('voiceIn').value =
+      'Between our 9 AM board review on Windows OneDrive and my 11 AM client keynote, here is the #1 operational shift that lifted our net margin to 94%: we stopped moving raw files across clouds and unified our executive and authority rhythm.';
+    runVoice();
+    return;
+  }
+  if (isRecording && speechRec) {
+    speechRec.stop();
+    isRecording = false;
+    if (btn) btn.innerHTML = '&#127897; Dictate Live Voice Note';
+    return;
+  }
+  speechRec = new SR();
+  speechRec.lang = 'en-AU';
+  speechRec.interimResults = false;
+  speechRec.onresult = (ev) => {
+    const t = ev.results[0][0].transcript;
+    document.getElementById('voiceIn').value = t;
+    runVoice();
+    showToast('Voice note captured & converted to LinkedIn Authority Bundle!');
+  };
+  speechRec.onend = () => {
+    isRecording = false;
+    if (btn) btn.innerHTML = '&#127897; Dictate Live Voice Note';
+  };
+  isRecording = true;
+  if (btn) btn.innerHTML = '&#9209; Stop Recording...';
+  speechRec.start();
+}
 function openHandoff(itemId, targetKey) {
   const item = localState.items.find((i) => i.id === itemId) || localState.items[0];
   const packet = AureliaEngine.handoffPacket(item, localState.assets, targetKey);
@@ -326,6 +385,70 @@ function closeHandoffModal() {
   if (modal) modal.classList.remove('open');
 }
 
+function populateInvoicePlans() {
+  const sel = document.getElementById('invPlan');
+  if (!sel || sel.options.length > 0) return;
+  Object.values(AureliaEngine.PRICING_PLANS).forEach((p) => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = `${p.product} — $${p.amountAud} AUD (${p.billingCycle})`;
+    sel.appendChild(opt);
+  });
+}
+
+function renderInvoice() {
+  populateInvoicePlans();
+  const planId = (document.getElementById('invPlan') && document.getElementById('invPlan').value) || 'velvet_pro';
+  const buyerName = (document.getElementById('invBuyer') && document.getElementById('invBuyer').value) || 'Sarah Jenkins, Managing Director';
+  const companyName = (document.getElementById('invCompany') && document.getElementById('invCompany').value) || 'Meridian Advisory Partners Pty Ltd';
+  const inv = AureliaEngine.generateCorporateInvoice({ planId, buyerName, companyName });
+  lastInvoice = inv;
+  const out = document.getElementById('invoiceOut');
+  if (!out) return;
+  out.innerHTML =
+    `<div class="card" style="background:#fefce8;border-color:#d4af37">` +
+    `<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;border-bottom:2px solid #d4af37;padding-bottom:6px;margin-bottom:8px">` +
+    `<b>TAX INVOICE: ${inv.invoiceNumber}</b><span>Issued: ${inv.issuedDate} &middot; ${inv.vendorName}</span></div>` +
+    `<div style="font-size:14px;margin-bottom:6px"><b>Bill To:</b> ${inv.buyerName} (${inv.companyName})</div>` +
+    `<div style="font-size:14px;margin-bottom:6px"><b>Subscription:</b> ${inv.productName}</div>` +
+    `<div style="font-size:13px;color:#475569;margin-bottom:8px"><b>Recommended Corporate GL Category:</b> <code>${inv.glCategory}</code></div>` +
+    `<div style="font-size:15px;background:#fff;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:10px">` +
+    `Ex-GST: <b>$${inv.exGstAmount.toFixed(2)}</b> &nbsp;|&nbsp; GST (10%): <b>$${inv.gstAmount.toFixed(2)}</b> &nbsp;|&nbsp; Total Paid/Due: <b style="color:#15803d">$${inv.totalIncGst.toFixed(2)} AUD</b></div>` +
+    `<div class="btn-row">` +
+    `<button class="gold sm" onclick="copyText(lastInvoice.approvalMemo, 'Finance Expense Approval Memo')">1-Click Copy Finance Approval Email</button>` +
+    `<button class="outline sm" onclick="printCorporateInvoice()">Print / Save PDF Tax Invoice</button></div></div>`;
+}
+
+function printCorporateInvoice() {
+  if (!lastInvoice) renderInvoice();
+  const inv = lastInvoice;
+  const w = window.open('', '_blank', 'width=780,height=680');
+  if (!w) {
+    copyText(inv.approvalMemo, 'Tax Invoice & Finance Memo');
+    return;
+  }
+  w.document.write(`<!DOCTYPE html><html><head><title>Tax Invoice ${inv.invoiceNumber}</title><style>body{font-family:'Segoe UI',sans-serif;padding:32px;color:#18181b;line-height:1.5}h1{margin:0;color:#1e1b2e}.box{border:2px solid #1e1b2e;border-radius:10px;padding:20px;margin-top:18px}</style></head><body><h1>TAX INVOICE &mdash; ${inv.invoiceNumber}</h1><div><b>Vendor:</b> ${inv.vendorName} &middot; <b>Date:</b> ${inv.issuedDate}</div><div class="box"><div><b>Bill To:</b> ${inv.buyerName} &mdash; ${inv.companyName}</div><div><b>Product:</b> ${inv.productName} (${inv.billingCycle})</div><div><b>Corporate GL Code:</b> ${inv.glCategory}</div><div><b>Included Capabilities:</b> ${inv.features}</div><hr><div><b>Subtotal (Ex-GST):</b> $${inv.exGstAmount.toFixed(2)} AUD</div><div><b>GST (10%):</b> $${inv.gstAmount.toFixed(2)} AUD</div><div style="font-size:20px;font-weight:900;margin-top:6px">TOTAL: $${inv.totalIncGst.toFixed(2)} AUD</div></div><script>window.onload=function(){window.print();}</script></body></html>`);
+  w.document.close();
+}
+
+function renderPartnerKit() {
+  const sel = document.getElementById('partnerChannelSelect');
+  const chId = (sel && sel.value) || 'ghostwriters';
+  const kit = AureliaEngine.generatePartnerKit(chId);
+  lastPartnerKit = kit;
+  const out = document.getElementById('partnerOut');
+  if (!out) return;
+  out.innerHTML =
+    `<div class="card">` +
+    `<div style="margin-bottom:6px"><span class="badge b-ready">${kit.commission}</span></div>` +
+    `<div style="font-size:14px;margin-bottom:6px"><b>Target Partners:</b> ${kit.targetPartners}</div>` +
+    `<div style="font-size:13.5px;color:#475569;margin-bottom:6px"><b>Built-In Viral Loop:</b> ${kit.viralHook}</div>` +
+    `<pre style="white-space:pre-wrap;font-family:inherit;font-size:13.5px;background:#fff;padding:10px;border:1px solid #cbd5e1;border-radius:8px;margin:0 0 10px 0">${kit.dmPitch}</pre>` +
+    `<div class="btn-row">` +
+    `<button class="gold sm" onclick="copyText(lastPartnerKit.dmPitch, 'Partner Outbound DM Pitch')">1-Click Copy Partner DM Pitch</button>` +
+    `<button class="outline sm" onclick="copyText(window.location.origin + '/?ref=partner_' + lastPartnerKit.id, '30% Partner Referral Link')">Copy Partner Referral Link</button></div></div>`;
+}
+
 window.setMode = setMode;
 window.cascade = cascade;
 window.resetDemo = resetDemo;
@@ -335,5 +458,25 @@ window.copyVoicePart = copyVoicePart;
 window.copyText = copyText;
 window.openHandoff = openHandoff;
 window.closeHandoffModal = closeHandoffModal;
+window.installAppPrompt = installAppPrompt;
+window.toggleVoiceDictation = toggleVoiceDictation;
+window.renderInvoice = renderInvoice;
+window.printCorporateInvoice = printCorporateInvoice;
+window.renderPartnerKit = renderPartnerKit;
 
-render();
+(function initFromUrl() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const urlMode = params.get('mode');
+    if (urlMode && MODE_META[urlMode]) {
+      const btn = document.querySelector(`.tab[data-mode="${urlMode}"]`);
+      setMode(urlMode, btn);
+    } else {
+      render();
+    }
+  } catch (_) {
+    render();
+  }
+  renderInvoice();
+  renderPartnerKit();
+})();

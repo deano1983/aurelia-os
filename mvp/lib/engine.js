@@ -275,11 +275,130 @@ function getInitialDemoState() {
   return { assets, items };
 }
 
+const PRICING_PLANS = {
+  velvet_pro: {
+    id: 'velvet_pro',
+    product: 'Velvet Cadence — Executive Authority Pro',
+    mode: 'velvet',
+    amountAud: 99,
+    billingCycle: 'Monthly (B2B Corporate Expensable)',
+    glCategory: 'Professional Development / Executive Communications & PR Software',
+    features: '90-Sec Voice-to-Authority Studio + Tri-Cloud Proof Vault (OneDrive/GDrive/iCloud) + 4-Slide Carousel Briefs',
+  },
+  velvet_ea: {
+    id: 'velvet_ea',
+    product: 'Velvet Cadence — Executive + EA Dual Seat',
+    mode: 'velvet',
+    amountAud: 149,
+    billingCycle: 'Monthly (B2B Corporate Expensable)',
+    glCategory: 'Professional Development / Executive Communications & PR Software',
+    features: 'Delegated EA Proof Attachment Queue + 1-Tap Executive Mobile Sign-Off + Ghostwriter Workspace',
+  },
+  sovereign_annual: {
+    id: 'sovereign_annual',
+    product: 'Sovereign Brief — Annual Executive Charter',
+    mode: 'sovereign',
+    amountAud: 399,
+    billingCycle: 'Annual Pass (Saves $69/yr — B2B Expensable)',
+    glCategory: 'Executive Productivity & Board Governance Software',
+    features: 'Cross-Cloud Board Dossier Readiness + Windows OneDrive/iOS iCloud Sync + 1-Tap Cascade Reschedule',
+  },
+  glowgrid_pro: {
+    id: 'glowgrid_pro',
+    product: 'GlowGrid Studio — Creator Pro + Hook Vault',
+    mode: 'glowgrid',
+    amountAud: 29,
+    billingCycle: 'Monthly Creator Pass',
+    glCategory: 'Digital Media & Creator Production Software',
+    features: 'iPhone/iCloud-to-Windows Zero-Blob 4K Media Drop + 4-Stage Upload Radar + 2-Tap IG/TikTok Handoff',
+  },
+  aurelia_suite: {
+    id: 'aurelia_suite',
+    product: 'Aurelia OS — All-Access Sovereign Suite (1+3 Bundle)',
+    mode: 'all',
+    amountAud: 149,
+    billingCycle: 'Monthly All-Access Suite (B2B Corporate Expensable)',
+    glCategory: 'Executive Operations, Cloud Workflow & Communications Suite',
+    features: 'Full Aurelia OS Hub + Velvet Cadence + Sovereign Brief + GlowGrid Studio (Unlimited Cloud Pointers)',
+  },
+};
+
+const PARTNER_CHANNELS = {
+  ghostwriters: {
+    id: 'ghostwriters',
+    title: 'Channel #1: LinkedIn Ghostwriters & Female Personal Brand Agencies (For Velvet Cadence)',
+    commission: '30% Recurring Partner Revenue Share ($30–$45/mo per client)',
+    targetPartners: 'Boutique LinkedIn ghostwriting agencies, female founder PR consultants, fractional CMO cohorts',
+    dmPitch: 'Hi [Name] — love how you position female executives on LinkedIn. Quick question: how much time do you lose every week chasing busy clients for voice notes and proof numbers sitting on their work laptops?\n\nWe built Velvet Cadence so your clients can dictate a 90-second voice note on their iPhone and attach a OneDrive/Google Drive chart in 1 tap — and it hands you a structured LinkedIn post + 4-slide carousel brief ready to polish. We pay agency partners 30% recurring ($30-$45/mo per seat) and your clients expense it 100% under their company PR/Professional Development budget. Want a free partner sandbox link to test with 2 clients this week?',
+    viralHook: 'Every exported 4-slide LinkedIn carousel PDF carries a subtle luxury footer: "Executive Proof Brief assembled via VelvetCadence" — turning every client post into inbound agency + software leads.',
+  },
+  ea_networks: {
+    id: 'ea_networks',
+    title: 'Channel #2: Executive Assistant (EA) Communities & Virtual EA Agencies (For Sovereign Brief)',
+    commission: '$100 Instant Bounty or 25% Annual Recurring Share per Executive + EA Pair',
+    targetPartners: 'The Officials, Practically Perfect PA, Virtual EA agencies, Women-on-Boards coaching cohorts',
+    dmPitch: 'Hi [Name] — if you support senior female executives or board directors who use a Windows PC/OneDrive at work and an iPhone/iCloud for life and travel, we built Sovereign Brief specifically for the EA + Executive handoff.\n\nIt unifies OneDrive board packs, Google Drive briefs, and iOS calendar boundaries into a single readiness radar with 1-tap Cascade Rescheduling when meetings overrun — without uploading a single confidential file to third-party servers. We pay EA champions $100 per onboarded executive (or 25% recurring). Can I send you a 2-minute walkthrough link?',
+    viralHook: 'Dual-Seat EA Delegation: when an EA invites her Executive (or vice versa), both seats bind into one shared Cross-Cloud Dossier automatically.',
+  },
+  creator_coaches: {
+    id: 'creator_coaches',
+    title: 'Channel #3: TikTok / IG Reels UGC & 5-to-9 Creator Coaches (For GlowGrid Studio)',
+    commission: '35% Recurring Creator Affiliate Commission + Co-Branded Hook Vault',
+    targetPartners: 'Female UGC coaches, Skool/Stan Store creator educators, micro-influencer community hosts',
+    dmPitch: 'Hey [Name]! Your community is full of ambitious 5-to-9 women building their creator brand — and their #1 technical bottleneck is getting 4K iPhone/iCloud videos onto their Windows laptop and actually hitting their prime upload windows.\n\nWe built GlowGrid Studio ("AirDrop + Upload Accountability for iPhone + Windows + Android") and we are giving select creator educators a 35% recurring affiliate link plus a custom Hook Vault for your students. Want your custom affiliate link to drop in your bio/course portal today?',
+    viralHook: '20-Second TikTok/Reel Screen Demo: "POV: Moving a 640MB 4K iPhone clip to your Windows PC in 0 seconds without cables or Google Drive storage-full errors."',
+  },
+};
+
+function generateCorporateInvoice(input = {}) {
+  const planKey = PRICING_PLANS[input.planId] ? input.planId : 'velvet_pro';
+  const plan = PRICING_PLANS[planKey];
+  const buyerName = String(input.buyerName || 'Sarah Jenkins, Managing Director').trim();
+  const companyName = String(input.companyName || 'Meridian Advisory Partners Pty Ltd').trim();
+  const buyerEmail = String(input.buyerEmail || 's.jenkins@meridianadvisory.com.au').trim();
+  const totalIncGst = Number(plan.amountAud);
+  const gstAmount = Number((totalIncGst / 11).toFixed(2));
+  const exGstAmount = Number((totalIncGst - gstAmount).toFixed(2));
+  const invoiceNumber = 'AUR-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-' + Math.floor(1000 + Math.random() * 9000);
+  const issuedDate = new Date().toISOString().slice(0, 10);
+
+  const approvalMemo = `Subject: Software Expense Approval — ${plan.product} ($${totalIncGst} AUD)\n\nHi Finance / Operations Team,\n\nI am activating ${plan.product} ($${totalIncGst} AUD ${plan.billingCycle}) for ${companyName}. It automates our executive LinkedIn thought-leadership publishing and cross-cloud report preparation across Microsoft OneDrive, Google Drive, and iOS with zero external file hosting, replacing $1,500+/mo in external agency/ghostwriting overhead.\n\nPlease allocate this tax invoice (${invoiceNumber}, Vendor ABN: 61 794 639 443) under GL Category: "${plan.glCategory}".\n\nThank you,\n${buyerName}`;
+
+  return {
+    invoiceNumber,
+    issuedDate,
+    vendorName: 'Aurelia Systems (ABN 61 794 639 443)',
+    vendorAbn: '61 794 639 443',
+    buyerName,
+    companyName,
+    buyerEmail,
+    planId: plan.id,
+    productName: plan.product,
+    billingCycle: plan.billingCycle,
+    glCategory: plan.glCategory,
+    features: plan.features,
+    exGstAmount,
+    gstAmount,
+    totalIncGst,
+    currency: 'AUD',
+    approvalMemo,
+  };
+}
+
+function generatePartnerKit(channelId = 'ghostwriters') {
+  const ch = PARTNER_CHANNELS[channelId] || PARTNER_CHANNELS.ghostwriters;
+  return { ...ch };
+}
+
 const AureliaEngine = {
   PROVIDERS,
   HANDOFF_TARGETS,
   ENERGY_PROFILES,
   DOMAINS,
+  PRICING_PLANS,
+  PARTNER_CHANNELS,
+  generateCorporateInvoice,
+  generatePartnerKit,
   createCloudPointer,
   buildReminders,
   createCommandItem,

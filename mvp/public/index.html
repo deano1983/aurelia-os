@@ -2,6 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1e1b2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Aurelia OS">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <title>Aurelia OS — Sovereign Command Suite (1 Flagship + 3 Spin-Offs)</title>
 <style>
 *,*::before,*::after{box-sizing:border-box}
@@ -58,6 +65,7 @@ code{word-break:break-all;background:#e2e8f0;padding:2px 5px;border-radius:4px;f
       <div class="subhead">iOS (iCloud) &bull; Windows (OneDrive) &bull; Android (Google Drive) &bull; Zero-Blob Relay ($0 Video Egress)</div>
     </div>
     <div class="header-actions">
+      <button class="gold sm" id="installPwaBtn" onclick="installAppPrompt()" title="Install Aurelia OS on Windows Desktop, iOS Home Screen, or Android">&#128242; Install App (iOS / Win / Android)</button>
       <button class="outline sm" onclick="resetDemo()" title="Restore default demo state &amp; collision scenario">&#8635; Reset Demo</button>
       <a class="deck-link" href="/deck.html">View Product &amp; Viability Deck &rarr;</a>
     </div>
@@ -129,10 +137,57 @@ code{word-break:break-all;background:#e2e8f0;padding:2px 5px;border-radius:4px;f
         <select id="proofAssetSelect" onchange="runVoice()"></select>
       </div>
       <div style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap">
+        <button class="outline" id="micBtn" onclick="toggleVoiceDictation()">&#127897; Dictate Live Voice Note</button>
         <button class="gold" onclick="runVoice()">Generate LinkedIn Post + 4-Slide Carousel + Video Hook</button>
       </div>
     </div>
     <div id="voiceOut" style="margin-top:12px"></div>
+  </div>
+
+  <div class="grid">
+    <div class="panel" id="b2bPanel">
+      <h2>
+        <span>B2B Corporate Expense Checkout &amp; Tax Invoice Generator</span>
+        <span class="badge b-executive">100% Expensable</span>
+      </h2>
+      <div style="font-size:14px;color:#475569;margin-bottom:10px">
+        Generates an instant Australian Tax Invoice (<code>ABN 61 794 639 443</code>) pre-coded under <b>Professional Development / Executive Communications &amp; PR Software</b> + a 1-click Finance Approval Memo.
+      </div>
+      <div class="form-grid">
+        <div style="grid-column: 1 / -1">
+          <label for="invPlan" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Select Product Door / Subscription Tier:</label>
+          <select id="invPlan" onchange="renderInvoice()"></select>
+        </div>
+        <div>
+          <label for="invBuyer" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Executive / Buyer Name:</label>
+          <input id="invBuyer" type="text" value="Sarah Jenkins, Managing Director" oninput="renderInvoice()">
+        </div>
+        <div>
+          <label for="invCompany" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Company / Entity Name:</label>
+          <input id="invCompany" type="text" value="Meridian Advisory Partners Pty Ltd" oninput="renderInvoice()">
+        </div>
+      </div>
+      <div id="invoiceOut"></div>
+    </div>
+
+    <div class="panel" id="partnerPanel">
+      <h2>
+        <span>Zero-Ad-Spend Distribution &amp; Partner Affiliate Engine</span>
+        <span class="badge b-ready">30%&ndash;35% Recurring</span>
+      </h2>
+      <div style="font-size:14px;color:#475569;margin-bottom:10px">
+        1-Click copyable outbound partner pitches &amp; viral loops for our 3 distribution hubs: LinkedIn Ghostwriters, Executive Assistant Networks, and Creator Coaches.
+      </div>
+      <div style="margin-bottom:10px">
+        <label for="partnerChannelSelect" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Select Distribution Partner Channel:</label>
+        <select id="partnerChannelSelect" onchange="renderPartnerKit()">
+          <option value="ghostwriters">1. LinkedIn Ghostwriters &amp; Personal Brand Agencies (Velvet Cadence — 30% Recurring)</option>
+          <option value="ea_networks">2. Executive Assistant (EA) Networks &amp; Virtual PA Agencies (Sovereign Brief — $100 Bounty / 25%)</option>
+          <option value="creator_coaches">3. TikTok / IG Reels UGC &amp; Creator Coaches (GlowGrid Studio — 35% Recurring)</option>
+        </select>
+      </div>
+      <div id="partnerOut"></div>
+    </div>
   </div>
 </div>
 

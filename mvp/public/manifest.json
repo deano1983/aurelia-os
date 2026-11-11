@@ -1,0 +1,47 @@
+{
+  "name": "Aurelia OS — Executive & Creator Command Suite",
+  "short_name": "Aurelia OS",
+  "description": "Cross-Cloud (iCloud, OneDrive, Google Drive) & Cross-OS (iOS, Windows, Android) Executive & Creator Suite + Velvet Cadence, Sovereign Brief & GlowGrid Studio.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e1b2e",
+  "theme_color": "#1e1b2e",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Velvet Cadence (LinkedIn Studio)",
+      "short_name": "Velvet Cadence",
+      "description": "90-Sec Voice-to-Authority & Cloud Proof Studio",
+      "url": "/?mode=velvet",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Sovereign Brief (Exec Dossier)",
+      "short_name": "Sovereign Brief",
+      "description": "Cross-Cloud Executive Report & Boundary Radar",
+      "url": "/?mode=sovereign",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "GlowGrid Studio (Creator Radar)",
+      "short_name": "GlowGrid",
+      "description": "iCloud-to-Windows 4K Drop & Upload Consistency Radar",
+      "url": "/?mode=glowgrid",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

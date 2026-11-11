@@ -13,6 +13,8 @@ const MIME = {
   '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.ico': 'image/x-icon',
 };
 
 let state = engine.getInitialDemoState();
@@ -86,6 +88,14 @@ const server = http.createServer(async (req, res) => {
       const b = await readBody(req);
       const item = state.items.find((i) => i.id === b.itemId) || state.items[0];
       return send(res, 200, engine.handoffPacket(item, state.assets, b.target));
+    }
+    if (req.method === 'POST' && u.pathname === '/api/invoice') {
+      const b = await readBody(req);
+      return send(res, 200, engine.generateCorporateInvoice(b));
+    }
+    if (req.method === 'GET' && u.pathname === '/api/partner-kit') {
+      const ch = u.searchParams.get('channel') || 'ghostwriters';
+      return send(res, 200, engine.generatePartnerKit(ch));
     }
     if (req.method === 'GET' || req.method === 'HEAD') {
       const file = path.join(PUBLIC, u.pathname === '/' ? 'index.html' : u.pathname);

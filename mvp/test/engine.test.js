@@ -122,4 +122,30 @@ test('Client-Side Universal Engine (engine-client.js) has 100% parity with Node 
   assert.ok(pkt.ready);
 });
 
+test('B2B Corporate Expense Tax Invoice: computes exact 10% GST breakdown, ABN 61 794 639 443, and Finance Approval Memo', () => {
+  const inv = engine.generateCorporateInvoice({
+    planId: 'velvet_pro',
+    buyerName: 'Claire Sterling, Managing Partner',
+    companyName: 'Sterling Capital Advisory Pty Ltd',
+  });
+  assert.equal(inv.vendorAbn, '61 794 639 443');
+  assert.equal(inv.totalIncGst, 99);
+  assert.equal(inv.gstAmount, 9.00);
+  assert.equal(inv.exGstAmount, 90.00);
+  assert.ok(inv.approvalMemo.includes('Sterling Capital Advisory Pty Ltd'));
+  assert.ok(inv.approvalMemo.includes('61 794 639 443'));
+});
+
+test('Zero-Ad-Spend Partner Affiliate Kit: returns ready-to-send DM pitches & recurring commission terms for all 3 channels', () => {
+  const gw = engine.generatePartnerKit('ghostwriters');
+  const ea = engine.generatePartnerKit('ea_networks');
+  const cc = engine.generatePartnerKit('creator_coaches');
+  assert.ok(gw.commission.includes('30%'));
+  assert.ok(ea.commission.includes('$100'));
+  assert.ok(cc.commission.includes('35%'));
+  assert.ok(gw.dmPitch.includes('Velvet Cadence'));
+  assert.ok(ea.dmPitch.includes('Sovereign Brief'));
+  assert.ok(cc.dmPitch.includes('GlowGrid Studio'));
+});
+
 
