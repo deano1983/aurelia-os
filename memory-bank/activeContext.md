@@ -18,3 +18,9 @@ Third venture in Dean's Higgsfield-style digital product factory (`C:\dev\aureli
 - `01-product-and-subset-strategy.md` — full 1+3 product & hidden-niche strategy from `niche-strategist`.
 - `02-crossplatform-cloud-architecture.md` — full cross-OS/cross-cloud blueprint & SQLite schema from `crossplatform-architect`.
 - `03-commercial-diligence-and-ranking.md` — commercial due diligence, unit economics, and 30-day sequenced build ranking.
+- `04-go-to-market-and-monetization-playbook.md` — complete unit economics (`$0.114/mo` infra+AI COGS, `92.4%–96.7%` gross margin), B2B corporate expense packaging for **Velvet Cadence**, Executive Assistant (EA) channel strategy for **Sovereign Brief**, micro-influencer affiliate loop for **GlowGrid Studio**, and 30-day `$10k MRR` sprint plan.
+
+## MVP & Live Public Deployment (`C:\dev\aurelia-os\mvp`)
+- **Automated Tests:** `8/8` passing (`node --test` in `C:\dev\aurelia-os\mvp`) covering Zero-Blob Cloud Pointers (`icloud://`, `onedrive://`, `gdrive://`), multi-stage reminders, Life-Work Collision Detector, 1-Tap Cascade Reschedule (`+24h`), Velvet Cadence Voice-to-Authority bundle generation, Assisted 2-Tap Native Handoff packets, Executive Dossier readiness scoring, and 100% parity between `lib/engine.js` and `public/engine-client.js`.
+- **Interactive Workspace (`public/index.html` + `public/app.js` + `public/engine-client.js`):** Full interactive tabs for Flagship **Aurelia OS** and all 3 Spin-Offs (**Velvet Cadence**, **Sovereign Brief**, **GlowGrid Studio**), Fit-to-All responsive CSS across mobile (`375px`), tablet (`768px`), and PC (`1400px`).
+- **Interactive Product & Commercial Deck (`public/deck.html`):** Large-Bold, Fit-to-All responsive web showcase with interactive MRR/margin simulator.

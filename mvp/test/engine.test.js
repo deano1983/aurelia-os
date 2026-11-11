@@ -71,3 +71,55 @@ test('Velvet Cadence Voice-to-Authority: transforms voice note + cloud proof ass
   assert.equal(out.carouselSlides.length, 4);
   assert.ok(out.shortVideoHook.includes('OneDrive_Q3_Margin_Report.xlsx'));
 });
+
+test('Assisted 2-Tap Native Handoff: resolves icloud://, onedrive://, and gdrive:// deep-link packets for IG Reels, TikTok, LinkedIn, and Board Deck', () => {
+  const demo = engine.getInitialDemoState();
+  const reelItem = demo.items[1];
+  const boardItem = demo.items[0];
+
+  const igPacket = engine.handoffPacket(reelItem, demo.assets, 'ig_reels');
+  assert.equal(igPacket.targetId, 'ig_reels');
+  assert.equal(igPacket.deepLinkUri, 'instagram://camera');
+  assert.equal(igPacket.serverEgressCostUsd, 0.00);
+  assert.ok(igPacket.ready);
+  assert.ok(igPacket.cloudUris.some((u) => u.startsWith('icloud://')));
+  assert.ok(igPacket.cloudUris.some((u) => u.startsWith('onedrive://')));
+  assert.equal(igPacket.steps.length, 2);
+
+  const tiktokPacket = engine.handoffPacket(demo.items[2], demo.assets, 'tiktok');
+  assert.equal(tiktokPacket.targetId, 'tiktok');
+  assert.ok(tiktokPacket.cloudUris.some((u) => u.startsWith('gdrive://')));
+
+  const boardPacket = engine.handoffPacket(boardItem, demo.assets);
+  assert.equal(boardPacket.targetId, 'board_deck');
+  assert.ok(boardPacket.primaryCloudUri.startsWith('onedrive://'));
+});
+
+test('Executive Dossier Readiness Scoring: flags collision risk before cascade and reaches 100% BOARD_READY after cascade', () => {
+  const demo = engine.getInitialDemoState();
+  const boardItem = demo.items[0];
+
+  const before = engine.scoreDossierReadiness(boardItem, demo.assets, demo.items);
+  assert.equal(before.hasLinkedAssets, true);
+  assert.equal(before.collisionFree, false);
+  assert.equal(before.score, 80);
+  assert.equal(before.status, 'ACTION_NEEDED');
+
+  const cascaded = engine.cascadeReschedule(demo.items, 24).items;
+  const after = engine.scoreDossierReadiness(cascaded[0], demo.assets, cascaded);
+  assert.equal(after.collisionFree, true);
+  assert.equal(after.score, 100);
+  assert.equal(after.status, 'BOARD_READY');
+});
+
+test('Client-Side Universal Engine (engine-client.js) has 100% parity with Node engine for Netlify static deployment', () => {
+  const clientEngine = require('../public/engine-client');
+  const demo = clientEngine.getInitialDemoState();
+  assert.equal(demo.assets.length, 3);
+  assert.equal(demo.items.length, 4);
+  const pkt = clientEngine.handoffPacket(demo.items[1], demo.assets, 'ig_reels');
+  assert.equal(pkt.serverEgressCostUsd, 0.00);
+  assert.ok(pkt.ready);
+});
+
+

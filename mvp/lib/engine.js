@@ -11,6 +11,49 @@ const PROVIDERS = {
   onedrive: { id: 'onedrive', label: 'Microsoft OneDrive (Windows / M365)', icon: 'OneDrive', scheme: 'onedrive://' },
 };
 
+const HANDOFF_TARGETS = {
+  ig_reels: {
+    id: 'ig_reels',
+    label: 'Instagram Reels (Assisted 2-Tap Native Handoff)',
+    deepLinkUri: 'instagram://camera',
+    webFallbackUri: 'https://www.instagram.com/',
+    steps: [
+      'Tap 1: Clipboard auto-stages caption, hook & CTA; Cloud Pointer resolves native iOS/Android media stream.',
+      'Tap 2: Native Instagram Reels camera opens with audio & trim pre-selected for instant publish.',
+    ],
+  },
+  tiktok: {
+    id: 'tiktok',
+    label: 'TikTok Creator Studio (Assisted 2-Tap Native Handoff)',
+    deepLinkUri: 'snssdk1233://studio/upload',
+    webFallbackUri: 'https://www.tiktok.com/upload',
+    steps: [
+      'Tap 1: Auto-copy viral POV hook + hashtag block and stage Zero-Blob cloud video pointer.',
+      'Tap 2: Launch TikTok upload sheet with native OS media picker bound to cloud pointer.',
+    ],
+  },
+  linkedin: {
+    id: 'linkedin',
+    label: 'LinkedIn Authority Publisher (Direct API + Native Handoff)',
+    deepLinkUri: 'linkedin://shareArticle',
+    webFallbackUri: 'https://www.linkedin.com/feed/',
+    steps: [
+      'Tap 1: Stage authority post + 4-slide PDF carousel proof attachment from OneDrive/GDrive.',
+      'Tap 2: Open LinkedIn composer or trigger direct API schedule in prime executive window.',
+    ],
+  },
+  board_deck: {
+    id: 'board_deck',
+    label: 'Executive Board Dossier (OneDrive / Outlook Sign-Off)',
+    deepLinkUri: 'ms-excel://ofe|u|',
+    webFallbackUri: 'https://onedrive.live.com/',
+    steps: [
+      'Tap 1: Verify all linked cross-cloud pointers (OneDrive XLSX, GDrive PDF, iCloud Keynote) pass readiness check.',
+      'Tap 2: Open native Windows/M365 sign-off dispatch with executive summary pre-filled.',
+    ],
+  },
+};
+
 const ENERGY_PROFILES = ['camera_ready', 'deep_exec', 'quick_admin', 'recharge'];
 const DOMAINS = ['executive', 'creator', 'personal'];
 
@@ -134,8 +177,107 @@ function voiceToAuthority(voiceTranscript, proofAssetTitle = 'Q3 Executive Metri
   };
 }
 
-module.exports = {
+function inferTargetKey(item, explicitTarget) {
+  if (explicitTarget && HANDOFF_TARGETS[explicitTarget]) return explicitTarget;
+  const ch = String((item && item.channel) || '').toLowerCase();
+  if (item && item.domain === 'executive') return 'board_deck';
+  if (ch.includes('tiktok')) return 'tiktok';
+  if (ch.includes('ig') || ch.includes('reel') || ch.includes('instagram')) return 'ig_reels';
+  return 'linkedin';
+}
+
+function handoffPacket(item, assets = [], targetKey) {
+  const resolvedTargetKey = inferTargetKey(item, targetKey);
+  const target = HANDOFF_TARGETS[resolvedTargetKey];
+  const assetMap = new Map((assets || []).map((a) => [a.id, a]));
+  const linkedAssets = ((item && item.linkedAssetIds) || []).map((id) => assetMap.get(id)).filter(Boolean);
+  const fallbackAsset = linkedAssets[0] || (assets && assets[0]) || createCloudPointer({ title: 'Default Cloud Asset', provider: 'icloud' });
+  const resolvedAssets = linkedAssets.length ? linkedAssets : [fallbackAsset];
+  const cloudUris = resolvedAssets.map((a) => a.externalUri);
+  const totalRawMb = resolvedAssets.reduce((sum, a) => sum + (Number(a.rawSizeMb) || 0), 0);
+  const clipboardPayload = [
+    `[${item ? item.title : 'Aurelia Handoff'}]`,
+    item && item.captionOrBrief ? item.captionOrBrief : 'Executive & Creator high-leverage brief staged via Aurelia OS.',
+    `Proof / Media Pointers: ${resolvedAssets.map((a) => `${a.title} (${a.externalUri})`).join(' | ')}`,
+  ].join('\n');
+
+  return {
+    itemId: item ? item.id : 'adhoc',
+    itemTitle: item ? item.title : 'Instant Native Handoff',
+    targetId: target.id,
+    targetLabel: target.label,
+    deepLinkUri: target.deepLinkUri,
+    webFallbackUri: target.webFallbackUri,
+    primaryCloudUri: fallbackAsset.externalUri,
+    cloudUris,
+    resolvedAssets: resolvedAssets.map((a) => ({
+      id: a.id, title: a.title, provider: a.provider, osOrigin: a.osOrigin, externalUri: a.externalUri, rawSizeMb: a.rawSizeMb,
+    })),
+    clipboardPayload,
+    steps: target.steps,
+    zeroBlobSavingsMb: totalRawMb,
+    serverEgressCostUsd: 0.00,
+    ready: cloudUris.every((u) => u.startsWith('icloud://') || u.startsWith('onedrive://') || u.startsWith('gdrive://')),
+  };
+}
+
+function scoreDossierReadiness(item, assets = [], allItems = []) {
+  const assetMap = new Map((assets || []).map((a) => [a.id, a]));
+  const linkedAssets = ((item && item.linkedAssetIds) || []).map((id) => assetMap.get(id)).filter(Boolean);
+  const hasLinkedAssets = linkedAssets.length > 0;
+  const hasBrief = Boolean(item && String(item.captionOrBrief || '').trim().length >= 10);
+  const hasMultiStageReminders = Boolean(item && Array.isArray(item.reminders) && item.reminders.length >= 2);
+  const activeCollisions = allItems.length
+    ? detectCollisions(allItems, 2).filter((c) => c.itemA === item.id || c.itemB === item.id)
+    : [];
+  const collisionFree = activeCollisions.length === 0;
+
+  let score = 0;
+  if (hasLinkedAssets) score += 40;
+  if (hasBrief) score += 25;
+  if (hasMultiStageReminders) score += 15;
+  if (collisionFree) score += 20;
+
+  const providersCovered = [...new Set(linkedAssets.map((a) => a.provider))];
+  const status = score >= 90 ? 'BOARD_READY' : score >= 70 ? 'ACTION_NEEDED' : 'AT_RISK';
+
+  return {
+    itemId: item ? item.id : '',
+    title: item ? item.title : '',
+    score,
+    status,
+    hasLinkedAssets,
+    hasBrief,
+    hasMultiStageReminders,
+    collisionFree,
+    activeCollisionCount: activeCollisions.length,
+    providersCovered,
+    summary: status === 'BOARD_READY'
+      ? `100% Ready — ${linkedAssets.length} cross-cloud pointer(s) verified, zero schedule collisions.`
+      : !collisionFree
+        ? `${score}% Ready — Schedule collision detected; run 1-Tap Cascade Reschedule (+24h).`
+        : `${score}% Ready — Attach cloud proof pointer or complete brief.`,
+  };
+}
+
+function getInitialDemoState() {
+  const assets = [
+    createCloudPointer({ id: 'ast_1', title: 'Q3 Board Financial Pack.xlsx', provider: 'onedrive', osOrigin: 'Windows', externalUri: 'onedrive://finance/q3-board-financial-pack.xlsx', mimeType: 'application/vnd.ms-excel', domain: 'executive', rawSizeMb: 24 }),
+    createCloudPointer({ id: 'ast_2', title: 'iPhone 16 Pro 4K Founder Storytime.mov', provider: 'icloud', osOrigin: 'iOS', externalUri: 'icloud://photos/iphone16pro-4k-founder-storytime.mov', mimeType: 'video/quicktime', domain: 'creator', rawSizeMb: 640 }),
+    createCloudPointer({ id: 'ast_3', title: 'Sponsor Campaign Brief & Deliverables.pdf', provider: 'gdrive', osOrigin: 'Android', externalUri: 'gdrive://campaigns/sponsor-brief-deliverables.pdf', mimeType: 'application/pdf', domain: 'creator', rawSizeMb: 8 }),
+  ];
+  const items = [
+    createCommandItem({ id: 'cmd_1', title: 'Q3 Board Financial Report Sign-Off', domain: 'executive', itemType: 'report_deadline', channel: 'Windows OneDrive / Outlook', energyProfile: 'deep_exec', isHardDeadline: true, dueAt: '2026-11-12T09:00:00.000Z', linkedAssetIds: ['ast_1'], captionOrBrief: 'Final EBITDA & margin deck for board distribution across M365.' }),
+    createCommandItem({ id: 'cmd_2', title: 'LinkedIn Authority Carousel + IG Reel Drop', domain: 'creator', itemType: 'content_upload', channel: 'LinkedIn + IG Reels', energyProfile: 'camera_ready', isHardDeadline: false, dueAt: '2026-11-12T09:45:00.000Z', linkedAssetIds: ['ast_1', 'ast_2'], captionOrBrief: 'How we cut quoting time from 2 weeks to 10 minutes + 4K founder storytime.' }),
+    createCommandItem({ id: 'cmd_3', title: 'Sponsor Reel Deliverable & Brand Sign-Off', domain: 'creator', itemType: 'content_upload', channel: 'IG Reels + TikTok', energyProfile: 'camera_ready', isHardDeadline: false, dueAt: '2026-11-12T13:30:00.000Z', linkedAssetIds: ['ast_2', 'ast_3'], captionOrBrief: '60s vertical cut with sponsor deliverables PDF proof.' }),
+    createCommandItem({ id: 'cmd_4', title: 'Executive Wellness & School Pickup Boundary', domain: 'personal', itemType: 'life_event', channel: 'Apple iCloud / EventKit', energyProfile: 'recharge', isHardDeadline: true, dueAt: '2026-11-12T16:30:00.000Z', linkedAssetIds: ['ast_3'], captionOrBrief: 'Protected personal recharge & family pickup window — hard stop.' }),
+  ];
+  return { assets, items };
+}
+
+const AureliaEngine = {
   PROVIDERS,
+  HANDOFF_TARGETS,
   ENERGY_PROFILES,
   DOMAINS,
   createCloudPointer,
@@ -144,5 +286,15 @@ module.exports = {
   detectCollisions,
   cascadeReschedule,
   voiceToAuthority,
+  handoffPacket,
+  scoreDossierReadiness,
+  getInitialDemoState,
 };
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = AureliaEngine;
+}
+if (typeof window !== 'undefined') {
+  window.AureliaEngine = AureliaEngine;
+}
 

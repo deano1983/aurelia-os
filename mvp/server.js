@@ -8,23 +8,40 @@ const engine = require('./lib/engine');
 
 const PORT = process.env.PORT || 3002;
 const PUBLIC = path.join(__dirname, 'public');
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
-
-const state = {
-  assets: [
-    engine.createCloudPointer({ id: 'ast_1', title: 'Q3 Board Financial Pack.xlsx', provider: 'onedrive', osOrigin: 'Windows', mimeType: 'application/vnd.ms-excel', domain: 'executive', rawSizeMb: 24 }),
-    engine.createCloudPointer({ id: 'ast_2', title: 'iPhone 16 Pro 4K Founder Storytime.mov', provider: 'icloud', osOrigin: 'iOS', mimeType: 'video/quicktime', domain: 'creator', rawSizeMb: 640 }),
-    engine.createCloudPointer({ id: 'ast_3', title: 'Sponsor Campaign Brief & Deliverables.pdf', provider: 'gdrive', osOrigin: 'Android', mimeType: 'application/pdf', domain: 'creator', rawSizeMb: 8 }),
-  ],
-  items: [
-    engine.createCommandItem({ id: 'cmd_1', title: 'Q3 Board Financial Report Sign-Off', domain: 'executive', itemType: 'report_deadline', channel: 'Windows OneDrive / Outlook', energyProfile: 'deep_exec', isHardDeadline: true, dueAt: '2026-11-12T09:00:00.000Z', linkedAssetIds: ['ast_1'], captionOrBrief: 'Final EBITDA & margin deck for board distribution.' }),
-    engine.createCommandItem({ id: 'cmd_2', title: 'LinkedIn Authority Carousel + Video Drop', domain: 'creator', itemType: 'content_upload', channel: 'LinkedIn + IG Reels', energyProfile: 'camera_ready', isHardDeadline: false, dueAt: '2026-11-12T09:45:00.000Z', linkedAssetIds: ['ast_1', 'ast_2'], captionOrBrief: 'How we cut quoting time from 2 weeks to 10 minutes.' }),
-    engine.createCommandItem({ id: 'cmd_3', title: 'Executive Wellness & School Pickup Boundary', domain: 'personal', itemType: 'life_event', channel: 'Apple iCloud / EventKit', energyProfile: 'recharge', isHardDeadline: true, dueAt: '2026-11-12T15:30:00.000Z', linkedAssetIds: [] }),
-  ],
+const MIME = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
 };
 
+let state = engine.getInitialDemoState();
+
+function buildStatePayload() {
+  const collisions = engine.detectCollisions(state.items, 2);
+  const rawMbSaved = state.assets.reduce((s, a) => s + (Number(a.rawSizeMb) || 0), 0);
+  const dossiers = {};
+  const handoffs = {};
+  for (const item of state.items) {
+    dossiers[item.id] = engine.scoreDossierReadiness(item, state.assets, state.items);
+    handoffs[item.id] = engine.handoffPacket(item, state.assets);
+  }
+  return {
+    assets: state.assets,
+    items: state.items,
+    collisions,
+    dossiers,
+    handoffs,
+    metrics: {
+      rawMbSaved,
+      pointerKbUsed: state.assets.length * 12,
+      serverEgressUsd: 0,
+    },
+  };
+}
+
 function send(res, code, obj) {
-  res.writeHead(code, { 'Content-Type': 'application/json' });
+  res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify(obj, null, 2));
 }
 
@@ -44,14 +61,16 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true, app: 'aurelia-os-mvp', mode: 'zero-blob-cross-cloud' });
     }
     if (req.method === 'GET' && u.pathname === '/api/state') {
-      const collisions = engine.detectCollisions(state.items, 2);
-      const rawMbSaved = state.assets.reduce((s, a) => s + a.rawSizeMb, 0);
-      return send(res, 200, { assets: state.assets, items: state.items, collisions, metrics: { rawMbSaved, pointerKbUsed: state.assets.length * 12, serverEgressUsd: 0 } });
+      return send(res, 200, buildStatePayload());
     }
     if (req.method === 'POST' && u.pathname === '/api/cascade') {
       const r = engine.cascadeReschedule(state.items, 24);
       state.items = r.items;
-      return send(res, 200, { shiftedCount: r.shiftedCount, items: state.items, collisions: engine.detectCollisions(state.items, 2) });
+      return send(res, 200, { shiftedCount: r.shiftedCount, ...buildStatePayload() });
+    }
+    if (req.method === 'POST' && u.pathname === '/api/reset') {
+      state = engine.getInitialDemoState();
+      return send(res, 200, buildStatePayload());
     }
     if (req.method === 'POST' && u.pathname === '/api/voice') {
       const b = await readBody(req);
@@ -61,12 +80,17 @@ const server = http.createServer(async (req, res) => {
       const b = await readBody(req);
       const a = engine.createCloudPointer(b);
       state.assets.unshift(a);
-      return send(res, 201, a);
+      return send(res, 201, { asset: a, ...buildStatePayload() });
+    }
+    if (req.method === 'POST' && u.pathname === '/api/handoff') {
+      const b = await readBody(req);
+      const item = state.items.find((i) => i.id === b.itemId) || state.items[0];
+      return send(res, 200, engine.handoffPacket(item, state.assets, b.target));
     }
     if (req.method === 'GET') {
       const file = path.join(PUBLIC, u.pathname === '/' ? 'index.html' : u.pathname);
       if (file.startsWith(PUBLIC) && fs.existsSync(file) && fs.statSync(file).isFile()) {
-        res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'text/plain' });
+        res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'text/plain; charset=utf-8' });
         return fs.createReadStream(file).pipe(res);
       }
     }
@@ -76,4 +100,9 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => console.log(`Aurelia OS MVP -> http://localhost:${PORT}`));
+if (require.main === module) {
+  server.listen(PORT, () => console.log(`Aurelia OS MVP -> http://localhost:${PORT}`));
+}
+
+module.exports = { server };
+
