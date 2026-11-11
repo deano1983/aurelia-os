@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurelia OS — 100-Client &amp; Partner Outbound CRM Command Board</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif;background:#faf8f5;color:#18181b;font-size:clamp(15px,1.8vw,17px);font-weight:700;line-height:1.5}
+.top{background:#1e1b2e;color:#fff;padding:clamp(14px,2.5vw,20px) clamp(12px,3vw,28px);border-bottom:4px solid #d4af37;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.top h1{font-size:clamp(19px,2.8vw,26px);font-weight:900;margin:0;color:#fff}
+.nav-btn{background:#d4af37;color:#1e1b2e;text-decoration:none;padding:9px 14px;border-radius:8px;font-weight:900;border:2px solid #fde68a;display:inline-block}
+.wrap{max-width:1340px;width:100%;margin:20px auto;padding:0 clamp(12px,2.5vw,24px) 40px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px;margin-bottom:18px;background:#fff;padding:14px;border:2px solid #d6d3d1;border-radius:12px}
+input,select{width:100%;padding:10px;border:2px solid #94a3b8;border-radius:8px;font-size:15px;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:14px}
+.card{background:#fff;border:2px solid #cbd5e1;border-top:4px solid #d4af37;border-radius:10px;padding:14px;word-break:break-word;display:flex;flex-direction:column;justify-content:space-between}
+.badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:12px;font-weight:900;background:#fef3c7;color:#92400e;margin:0 6px 6px 0}
+button{background:#1e1b2e;color:#fde68a;border:2px solid #d4af37;padding:8px 12px;border-radius:8px;font-weight:900;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="top">
+  <div>
+    <h1>AURELIA OS &mdash; 100-Client &amp; Partner Outbound CRM</h1>
+    <div style="color:#fde68a;font-size:14px">10 Specialist Agent Cohorts &bull; 100 Verified Client Spaces, Agencies &amp; Communities</div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <a class="nav-btn" href="./">&larr; Live Workspace (/)</a>
+    <a class="nav-btn" href="./deck.html" style="background:#312e48;color:#fff">Investor &amp; GTM Deck &rarr;</a>
+  </div>
+</div>
+<div class="wrap">
+  <div class="filters">
+    <input id="q" type="text" placeholder="Search 100 targets (e.g. Chief, Klowt, Brisbane, UGC, EA)..." oninput="render()">
+    <select id="prod" onchange="render()">
+      <option value="">All Products (Flagship + 3 Spin-Offs)</option>
+      <option value="Velvet Cadence">1: Velvet Cadence ($49-$149/mo)</option>
+      <option value="Sovereign Brief">2: Sovereign Brief ($39/mo - $399/yr)</option>
+      <option value="GlowGrid Studio">3: GlowGrid Studio ($19-$29/mo)</option>
+      <option value="Aurelia OS">Flagship: Aurelia OS Suite ($149/mo)</option>
+    </select>
+    <div id="countBox" style="display:flex;align-items:center;font-size:16px;color:#15803d;font-weight:900"></div>
+  </div>
+  <div id="list" class="grid"></div>
+</div>
+<script src="./clients-data.js"></script>
+<script>
+const DATA = window.AURELIA_100_CLIENTS || [];
+function cp(idx, btn) {
+  navigator.clipboard.writeText(DATA[idx].Outreach_Hook);
+  const old = btn.textContent;
+  btn.textContent = 'Copied Hook ✓';
+  setTimeout(() => btn.textContent = old, 1800);
+}
+function render() {
+  const q = document.getElementById('q').value.toLowerCase();
+  const prod = document.getElementById('prod').value.toLowerCase();
+  const f = DATA.map((r, idx) => ({...r, _i: idx})).filter(r =>
+    (!q || JSON.stringify(r).toLowerCase().includes(q)) &&
+    (!prod || r.Target_Product.toLowerCase().includes(prod))
+  );
+  document.getElementById('countBox').textContent = 'Showing ' + f.length + ' of ' + DATA.length + ' Verified Client Spaces & Partners';
+  document.getElementById('list').innerHTML = f.map(r => `
+    <div class="card">
+      <div>
+        <span class="badge">#${r.ID} &middot; ${r.Category}</span>
+        <span class="badge" style="background:#dcfce7;color:#166534">${r.Deal_Type}</span>
+        <div style="font-size:18px;font-weight:900;color:#1e1b2e;margin:4px 0">${r.Organization_or_Leader}</div>
+        <div style="font-size:13px;color:#475569;margin-bottom:6px">${r.Location} &middot; <b>${r.Target_Product}</b></div>
+        <div style="font-size:13.5px;margin-bottom:8px">${r.Why_High_Fit}</div>
+        <div style="font-size:13px;background:#f8fafc;padding:8px;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:10px">${r.Outreach_Hook}</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="cp(${r._i}, this)">1-Click Copy Outreach Pitch</button>
+        <a class="nav-btn" href="${r.Website_or_Channel}" target="_blank" rel="noopener" style="padding:7px 12px;font-size:13px">Open Channel &rarr;</a>
+      </div>
+    </div>
+  `).join('');
+}
+render();
+</script>
+</body>
+</html>
