@@ -3,208 +3,454 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1e1b2e">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Aurelia OS">
-<link rel="manifest" href="./manifest.json">
+<title>Aurelia OS — The command suite for women running work and a personal brand on three clouds</title>
+<meta name="description" content="Aurelia OS turns a 90-second iPhone voice note plus a OneDrive chart into a finished LinkedIn post, keeps board packs and iCloud calendars in one readiness radar, and drops 4K clips onto a Windows edit bay without a cable. Zero-blob: your files never leave your cloud.">
+<meta property="og:title" content="Aurelia OS — Cross-cloud command suite for women of influence">
+<meta property="og:description" content="Velvet Cadence, Sovereign Brief, GlowGrid Studio and the Aurelia OS suite. Your files stay in iCloud, OneDrive and Drive; we only index a sub-15 KB pointer.">
+<meta property="og:type" content="website">
 <link rel="icon" type="image/png" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
-<title>Aurelia OS — Sovereign Command Suite (1 Flagship + 3 Spin-Offs)</title>
 <style>
 *,*::before,*::after{box-sizing:border-box}
-html,body{max-width:100%;overflow-x:hidden;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif;background:#faf8f5;color:#18181b;font-size:clamp(15px,1.8vw,17px);font-weight:700;line-height:1.5}
-.top{background:linear-gradient(135deg,#1e1b2e 0%,#2a2440 100%);color:#fff;padding:clamp(14px,2.5vw,20px) clamp(12px,3vw,28px);border-bottom:4px solid #d4af37;display:flex;flex-direction:column;gap:14px}
-.top-bar{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px}
-.top h1{font-size:clamp(19px,2.8vw,26px);font-weight:900;margin:0 0 4px 0;color:#f8fafc}
-.subhead{font-size:clamp(13px,1.7vw,15px);color:#fde68a;font-weight:700}
-.header-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.deck-link{display:inline-flex;align-items:center;gap:6px;background:#d4af37;color:#1e1b2e;text-decoration:none;padding:9px 14px;border-radius:8px;font-size:clamp(13px,1.6vw,15px);font-weight:900;border:2px solid #fde68a;white-space:nowrap}
-.deck-link:hover{background:#fde68a}
-.tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px;width:100%}
-.tab{background:#312e48;color:#fff;border:2px solid #d4af37;padding:10px 12px;border-radius:8px;font-size:clamp(13px,1.6vw,15px);font-weight:800;cursor:pointer;text-align:center}
-.tab.active{background:#d4af37;color:#1e1b2e;box-shadow:0 0 0 2px #fde68a}
-.wrap{max-width:1340px;width:100%;margin:clamp(12px,2.5vw,22px) auto;padding:0 clamp(10px,2.5vw,22px) 36px}
-.mode-banner{background:#1e1b2e;color:#f8fafc;border-left:6px solid #d4af37;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px;margin-bottom:16px}
-.kpi{background:#fff;border:2px solid #d6d3d1;border-top:4px solid #d4af37;border-radius:10px;padding:12px 14px}
-.kpi-label{font-size:12px;text-transform:uppercase;color:#475569;letter-spacing:.04em}
-.kpi-val{font-size:clamp(18px,2.3vw,23px);font-weight:900;color:#1e1b2e;margin-top:2px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:18px;align-items:start}
-.panel{background:#fff;border:2px solid #d6d3d1;border-radius:12px;padding:clamp(12px,2.5vw,20px);margin-bottom:18px;width:100%}
-.panel h2{font-size:clamp(17px,2.2vw,21px);font-weight:900;margin:0 0 12px;color:#1e1b2e;border-bottom:3px solid #d4af37;padding-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
-.badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:12px;font-weight:900;text-transform:uppercase;margin:0 5px 4px 0;background:#e2e8f0;color:#1e293b}
-.b-icloud{background:#e0f2fe;color:#0369a1}.b-onedrive{background:#dbeafe;color:#1d4ed8}.b-gdrive{background:#dcfce7;color:#15803d}
-.b-executive{background:#fae8ff;color:#86198f}.b-creator{background:#fef3c7;color:#b45309}.b-personal{background:#dcfce7;color:#166534}
-.b-ready{background:#dcfce7;color:#166534;border:1px solid #15803d}.b-action{background:#fef3c7;color:#92400e;border:1px solid #d97706}
-.card{background:#f8fafc;border:2px solid #cbd5e1;border-radius:10px;padding:14px;margin-bottom:12px;word-break:break-word}
-.warn{background:#fff7ed;border:3px solid #ea580c;color:#9a3412;padding:14px;border-radius:10px;margin-bottom:16px;font-size:clamp(14px,1.9vw,17px);font-weight:800;word-break:break-word;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-.ok-banner{background:#f0fdf4;border:2px solid #15803d;color:#166534;padding:12px 14px;border-radius:10px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-button{background:#1e1b2e;color:#fff;border:0;padding:9px 14px;border-radius:8px;font-size:clamp(13px,1.7vw,15px);font-weight:800;cursor:pointer;max-width:100%}
-button.gold{background:#d4af37;color:#1e1b2e}
-button.outline{background:#fff;color:#1e1b2e;border:2px solid #1e1b2e}
-button.sm{padding:6px 10px;font-size:13px}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-input,select,textarea{width:100%;padding:9px 11px;border:2px solid #94a3b8;border-radius:8px;font-size:15px;font-weight:700;font-family:inherit;background:#fff;color:#18181b}
-.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px;margin-bottom:12px}
-.rem{font-size:clamp(12.5px,1.6vw,14px);color:#334155;margin-top:8px;padding-left:10px;border-left:3px solid #d4af37}
-.rem-stage{display:inline-block;background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:900;margin-right:4px}
-code{word-break:break-all;background:#e2e8f0;padding:2px 5px;border-radius:4px;font-size:13px}
-.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.72);z-index:999;padding:14px;overflow-y:auto;align-items:center;justify-content:center}
-.modal-backdrop.open{display:flex}
-.modal{background:#fff;border:3px solid #d4af37;border-radius:14px;max-width:640px;width:100%;padding:clamp(14px,3vw,22px);color:#18181b;box-shadow:0 20px 50px rgba(0,0,0,.4)}
-.modal h3{margin:0 0 8px 0;font-size:clamp(18px,2.4vw,22px);color:#1e1b2e}
-.toast{position:fixed;bottom:16px;right:16px;background:#1e1b2e;color:#fde68a;border:2px solid #d4af37;padding:10px 16px;border-radius:8px;font-size:14px;font-weight:800;z-index:1000;display:none}
-@media(max-width:600px){.top-bar{flex-direction:column;align-items:stretch}.deck-link{justify-content:center;width:100%}.tabs{grid-template-columns:1fr}}
+html,body{max-width:100%;overflow-x:hidden;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif;background:#faf8f5;color:#18181b;font-size:clamp(15px,1.7vw,17px);font-weight:700;line-height:1.6}
+a{color:#1e1b2e}
+.top{position:sticky;top:0;z-index:50;background:#1e1b2e;border-bottom:4px solid #d4af37;padding:10px clamp(12px,3vw,28px);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;font-weight:900;font-size:clamp(16px,2.2vw,20px);text-decoration:none;letter-spacing:.02em}
+.brand span.dot{width:10px;height:10px;border-radius:50%;background:#d4af37;display:inline-block}
+.nav{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.nav a{color:#e2e8f0;text-decoration:none;font-size:14px;font-weight:800}
+.nav a:hover{color:#fde68a}
+.btn{display:inline-block;text-decoration:none;border-radius:9px;padding:11px 16px;font-weight:900;font-size:14px;border:2px solid #d4af37;background:#d4af37;color:#1e1b2e;text-align:center}
+.btn.ghost{background:transparent;color:#fff;border-color:#94a3b8}
+.btn.dark{background:#1e1b2e;color:#fde68a}
+.btn.line{background:#fff;color:#1e1b2e;border-color:#1e1b2e}
+.btn.sm{padding:8px 12px;font-size:13px}
+.btn:hover{filter:brightness(1.07)}
+.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(12px,3vw,24px)}
+section{padding:clamp(28px,5vw,56px) 0}
+.kicker{display:inline-block;background:#fef3c7;color:#92400e;border:1px solid #f59e0b;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+h1{font-size:clamp(29px,5vw,52px);line-height:1.08;letter-spacing:-.02em;font-weight:900;margin:14px 0;color:#14121f}
+h1 em{font-style:normal;color:#92400e}
+h2{font-size:clamp(22px,3.4vw,34px);line-height:1.15;font-weight:900;margin:0 0 10px;color:#14121f}
+h3{font-size:clamp(17px,2.2vw,21px);font-weight:900;margin:0 0 6px;color:#14121f}
+p.lede{font-size:clamp(16px,2vw,20px);color:#334155;max-width:820px;margin:0 0 22px}
+.hero{background:linear-gradient(160deg,#1e1b2e 0%,#2c2547 55%,#3a2f57 100%);color:#fff;border-bottom:6px solid #d4af37;padding:clamp(30px,5vw,64px) 0}
+.hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(18px,4vw,44px);align-items:center}
+.hero p.lede{color:#e2e8f0}
+.hero h1{color:#fff}
+.hero h1 em{color:#fde68a}
+.hero .kicker{background:rgba(212,175,55,.16);color:#fde68a;border-color:#d4af37}
+.cta-row{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0 14px}
+.trust{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.trust span{border:1px solid rgba(255,255,255,.35);border-radius:7px;padding:5px 9px;font-size:12px;color:#f1f5f9;font-weight:800}
+
+
+.mock{background:#fff;color:#18181b;border:3px solid #d4af37;border-radius:14px;padding:16px;box-shadow:0 18px 40px rgba(0,0,0,.28)}
+.mock h4{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:#475569}
+.mock-row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-top:1px solid #e2e8f0;padding:9px 0;font-size:13px}
+.mock-row:first-of-type{border-top:0}
+.mock-row b{display:block;color:#14121f}
+.mock-row .tag{font-size:11px;font-weight:900;border-radius:5px;padding:2px 6px;white-space:nowrap}
+.tg-icloud{background:#e0f2fe;color:#0369a1}.tg-onedrive{background:#dbeafe;color:#1d4ed8}.tg-gdrive{background:#dcfce7;color:#15803d}
+.tg-ok{background:#dcfce7;color:#166534}.tg-warn{background:#fef3c7;color:#92400e}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:14px}
+.card{background:#fff;border:2px solid #d6d3d1;border-top:5px solid #d4af37;border-radius:12px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;gap:12px}
+.card.flagship{background:#1e1b2e;color:#fff;border-color:#d4af37}
+.card.flagship h3,.card.flagship .price{color:#fde68a}
+.card.flagship .muted,.card.flagship li{color:#e2e8f0}
+.card ul{margin:0;padding-left:18px}
+.card li{margin-bottom:5px;font-size:13.5px;color:#334155}
+.price{font-size:clamp(22px,2.8vw,28px);font-weight:900;color:#15803d;line-height:1.1}
+.price small{font-size:12px;color:#64748b;font-weight:800;display:block;margin-top:2px}
+.card.flagship .price small{color:#f1f5f9}
+.muted{color:#64748b;font-size:13px}
+.pillrow{display:flex;gap:6px;flex-wrap:wrap}
+.pill{background:#f1f5f9;border:1px solid #cbd5e1;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:900;color:#1e293b}
+.step{background:#fff;border:2px solid #d6d3d1;border-radius:12px;padding:18px}
+.step .num{width:30px;height:30px;border-radius:50%;background:#1e1b2e;color:#fde68a;display:flex;align-items:center;justify-content:center;font-weight:900;margin-bottom:10px}
+.trust-panel{background:#1e1b2e;color:#f8fafc;border-radius:16px;border:3px solid #d4af37;padding:clamp(18px,3vw,30px)}
+.trust-panel h2{color:#fff}
+.trust-panel p{color:#e2e8f0}
+.trust-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:14px;margin-top:14px}
+.trust-box{background:rgba(255,255,255,.07);border:1px solid rgba(212,175,55,.6);border-radius:10px;padding:14px}
+.trust-box b{display:block;font-size:clamp(20px,2.6vw,26px);color:#fde68a;line-height:1.1;margin-bottom:4px}
+.trust-box span{font-size:12.5px;color:#f1f5f9}
+table{width:100%;border-collapse:collapse;background:#fff;border:2px solid #d6d3d1;border-radius:12px;overflow:hidden}
+th,td{padding:11px 12px;text-align:left;font-size:13.5px;border-bottom:1px solid #e2e8f0;vertical-align:top}
+th{background:#1e1b2e;color:#fde68a;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+tbody tr:last-child td{border-bottom:0}
+td b{color:#14121f}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px}
+details.faq{background:#fff;border:2px solid #d6d3d1;border-radius:10px;padding:12px 14px;margin-bottom:10px}
+details.faq summary{cursor:pointer;font-weight:900;color:#14121f;font-size:15px}
+details.faq p{margin:8px 0 0;font-size:14px;color:#334155}
+.final{background:linear-gradient(135deg,#1e1b2e,#2f2749);color:#fff;border-radius:16px;padding:clamp(22px,4vw,40px);text-align:center;border:3px solid #d4af37}
+.final h2{color:#fff}
+.final p{color:#e2e8f0;max-width:720px;margin:0 auto 18px}
+footer{background:#14121f;color:#cbd5e1;padding:clamp(24px,4vw,40px) 0;margin-top:clamp(24px,4vw,44px);font-size:13px}
+footer a{color:#fde68a;text-decoration:none}
+.foot-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:20px}
+.foot-grid h5{color:#fff;font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 8px}
+.foot-grid ul{list-style:none;padding:0;margin:0}
+.foot-grid li{margin-bottom:5px}
+.legal{border-top:1px solid #312e48;margin-top:22px;padding-top:14px;color:#94a3b8;font-size:12px}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 </style>
 </head>
 <body>
-<div class="top">
-  <div class="top-bar">
+
+<header class="top">
+  <a class="brand" href="./index.html"><span class="dot"></span> AURELIA OS</a>
+  <nav class="nav">
+    <a href="#products">Products</a>
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a class="btn sm" href="./workspace.html">Open live workspace &rarr;</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
     <div>
-      <h1>AURELIA OS &mdash; Cross-Cloud Executive &amp; Creator Hub</h1>
-      <div class="subhead">iOS (iCloud) &bull; Windows (OneDrive) &bull; Android (Google Drive) &bull; Zero-Blob Relay ($0 Video Egress)</div>
-    </div>
-    <div class="header-actions">
-      <button class="gold sm" id="installPwaBtn" onclick="installAppPrompt()" title="Install Aurelia OS on Windows Desktop, iOS Home Screen, or Android">&#128242; Install App (iOS / Win / Android)</button>
-      <button class="outline sm" onclick="resetDemo()" title="Restore default demo state &amp; collision scenario">&#8635; Reset Demo</button>
-      <a class="deck-link" href="./clients.html" style="background:#312e48;color:#fde68a">100-Client Outbound CRM &rarr;</a>
-      <a class="deck-link" href="./deck.html">View Product &amp; Viability Deck &rarr;</a>
-    </div>
-  </div>
-  <div class="tabs" role="tablist">
-    <button class="tab active" data-mode="all" onclick="setMode('all',this)">Flagship: Aurelia OS ($79-$199/mo)</button>
-    <button class="tab" data-mode="velvet" onclick="setMode('velvet',this)">1: Velvet Cadence ($49-$149/mo)</button>
-    <button class="tab" data-mode="sovereign" onclick="setMode('sovereign',this)">2: Sovereign Brief ($39/mo)</button>
-    <button class="tab" data-mode="glowgrid" onclick="setMode('glowgrid',this)">3: GlowGrid Studio ($19-$29/mo)</button>
-  </div>
-</div>
-
-<div class="wrap">
-  <div id="modeBanner" class="mode-banner"></div>
-  <div id="kpiStrip" class="kpi-strip"></div>
-  <div id="collisionBox"></div>
-
-  <div class="grid">
-    <div class="panel" id="timelinePanel">
-      <h2>
-        <span id="timelineTitle">Unified Daily Command Timeline (Reports, Uploads &amp; Life)</span>
-        <span class="badge" id="timelineCountBadge">4 Active</span>
-      </h2>
-      <div id="timeline"></div>
-    </div>
-
-    <div class="panel" id="vaultPanel">
-      <h2>
-        <span>Cross-Cloud Zero-Blob Asset Vault (iCloud &middot; OneDrive &middot; GDrive)</span>
-        <span class="badge b-ready">$0.00 Egress</span>
-      </h2>
-      <div id="metrics" style="margin-bottom:12px;color:#15803d;font-size:15px"></div>
-
-      <div class="card" style="background:#fefce8;border-color:#d4af37">
-        <div style="font-size:14px;color:#1e1b2e;margin-bottom:8px">+ Index New Cross-Cloud Asset Pointer (Zero Server Upload)</div>
-        <div class="form-grid">
-          <input id="newAssetTitle" type="text" placeholder="Asset title (e.g. Q4 Board Keynote.key)" value="iPhone 16 Pro Vertical Reel Cut #4.mov">
-          <select id="newAssetProvider">
-            <option value="icloud">Apple iCloud (iOS / macOS)</option>
-            <option value="onedrive">Microsoft OneDrive (Windows)</option>
-            <option value="gdrive">Google Drive (Android / Workspace)</option>
-          </select>
-          <select id="newAssetDomain">
-            <option value="creator">Creator Media</option>
-            <option value="executive">Executive Dossier</option>
-            <option value="personal">Personal / Life</option>
-          </select>
-          <input id="newAssetSize" type="number" min="1" max="5000" value="320" placeholder="Size (MB)">
-        </div>
-        <button class="gold sm" onclick="addAssetPointer()">+ Link Cloud Pointer (12 KB Index / $0.00 Egress)</button>
+      <span class="kicker">For women running work and a personal brand</span>
+      <h1>Your work lives in OneDrive. Your life lives in iCloud. Your voice lives on LinkedIn.</h1>
+      <p class="lede">Aurelia OS is the command layer across all three — a 90-second voice note becomes a finished LinkedIn post, board packs and school pickups land on one readiness radar, and 4K iPhone clips reach a Windows edit bay without a cable.</p>
+      <div class="cta-row">
+        <a class="btn" href="./workspace.html">Try the live workspace — no signup</a>
+        <a class="btn ghost" href="#pricing">See pricing</a>
       </div>
-
-      <div id="assets"></div>
+      <div class="trust">
+        <span>iOS · iCloud</span>
+        <span>Windows · OneDrive</span>
+        <span>Android · Google Drive</span>
+        <span>Installable PWA</span>
+      </div>
+      <p class="muted" style="color:#cbd5e1;margin-top:12px;font-size:12.5px">Your files never upload to us. Aurelia indexes a sub-15 KB pointer and deep-links back into your own cloud — so there is no video bill, and nothing new for IT to approve.</p>
+    </div>
+    <div class="mock" role="img" aria-label="Preview of the Aurelia OS daily command timeline">
+      <h4>Preview · today's command timeline</h4>
+      <div class="mock-row">
+        <div><b>Q3 board pack final</b><span class="muted">OneDrive · 2:00 PM · hard deadline</span></div>
+        <span class="tag tg-onedrive">ONEDRIVE</span>
+      </div>
+      <div class="mock-row">
+        <div><b>LinkedIn carousel #14</b><span class="muted">Proof chart attached from iCloud</span></div>
+        <span class="tag tg-ok">READY</span>
+      </div>
+      <div class="mock-row">
+        <div><b>IG Reel — sponsor cut</b><span class="muted">4K clip still on iPhone</span></div>
+        <span class="tag tg-warn">UPLOAD 6:30 PM</span>
+      </div>
+      <div class="mock-row">
+        <div><b>School pickup</b><span class="muted">Protected boundary · non-negotiable</span></div>
+        <span class="tag tg-icloud">ICLOUD</span>
+      </div>
+      <div class="mock-row">
+        <div><b>Collision detected</b><span class="muted">Board pack and upload are 45 min apart</span></div>
+        <span class="tag tg-warn">1-TAP CASCADE</span>
+      </div>
     </div>
   </div>
+</section>
 
-  <div class="panel" id="velvetPanel">
-    <h2>
-      <span>Velvet Cadence: 90-Second Voice Note + Cloud Proof &rarr; LinkedIn Authority Bundle</span>
-      <span class="badge b-creator">Voice-to-Authority Studio</span>
-    </h2>
-    <div class="form-grid">
-      <div style="grid-column: 1 / -1">
-        <label for="voiceIn" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">1. Executive Voice Transcript (90-second capture):</label>
-        <textarea id="voiceIn" rows="2">We cut residential construction quoting from 2 weeks to 10 minutes by pairing a deterministic BOQ engine with automated supplier substitutions.</textarea>
+<section id="problem">
+  <div class="wrap">
+    <span class="kicker">The daily friction</span>
+    <h2>Three clouds, three apps, and a calendar that never agrees with any of them</h2>
+    <p class="lede">Generic to-do apps assume one cloud and one identity. They never met the executive with a Windows board pack in OneDrive, a client brief in Drive, a personal life in iCloud, and a LinkedIn presence to keep warm.</p>
+    <div class="grid-3">
+      <div class="card">
+        <div>
+          <h3>Your best insight dies in a voice memo</h3>
+          <p class="muted">You dictate the idea between meetings; the chart that proves it sits on the work laptop. By the time both are in one place, the window is gone — or you pay a ghostwriter to chase you for it.</p>
+        </div>
+        <div class="pillrow"><span class="pill">Velvet Cadence</span></div>
+      </div>
+      <div class="card">
+        <div>
+          <h3>The board pack and the school pickup</h3>
+          <p class="muted">Hard deadlines and non-negotiables share one body. When the board meeting overruns, the flexible work should move — not the family commitment.</p>
+        </div>
+        <div class="pillrow"><span class="pill">Sovereign Brief</span></div>
+      </div>
+      <div class="card">
+        <div>
+          <h3>4K on the iPhone, editor on Windows</h3>
+          <p class="muted">Cables, AirDrop misses, compressed transfers, another $30/mo of cloud storage — and a posting streak that quietly dies in week three.</p>
+        </div>
+        <div class="pillrow"><span class="pill">GlowGrid Studio</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="products" style="background:#fff;border-top:2px solid #e7e5e4;border-bottom:2px solid #e7e5e4">
+  <div class="wrap">
+    <span class="kicker">Four product doors, one engine</span>
+    <h2>Start with the one urgent slice. Upgrade without migrating anything.</h2>
+    <p class="lede">Every door shares the same metadata schema, so a $29 creator who grows into a board role moves up in one click — no export, no re-onboarding.</p>
+    <div class="grid-4">
+      <div class="card">
+        <div>
+          <span class="pill">Spin-off 1</span>
+          <h3 style="margin-top:8px">Velvet Cadence</h3>
+          <p class="muted">Voice-to-authority studio for founders, consultants and executives who publish on LinkedIn.</p>
+          <ul>
+            <li>90-second iPhone voice note → post, 4-slide carousel, video hook</li>
+            <li>Proof charts pulled from OneDrive or Drive by pointer</li>
+            <li>EA / ghostwriter dual seat for delegated approval</li>
+          </ul>
+        </div>
+        <div>
+          <div class="price">$49–$149<small>per month · 3 tiers, Solo to Exec + EA</small></div>
+          <a class="btn line sm" href="./workspace.html?mode=velvet" style="margin-top:10px">Open the voice studio &rarr;</a>
+        </div>
+      </div>
+      <div class="card">
+        <div>
+          <span class="pill">Spin-off 2</span>
+          <h3 style="margin-top:8px">Sovereign Brief</h3>
+          <p class="muted">Cross-cloud executive dossier for board directors, VPs and the EAs who support them.</p>
+          <ul>
+            <li>OneDrive packs, Drive briefs, iCloud calendar in one radar</li>
+            <li>Dossier readiness scoring before the deadline bites</li>
+            <li>1-tap cascade reschedule that protects hard dates</li>
+          </ul>
+        </div>
+        <div>
+          <div class="price">$39<small>per month, or $399 per year</small></div>
+          <a class="btn line sm" href="./workspace.html?mode=sovereign" style="margin-top:10px">Open the dossier radar &rarr;</a>
+        </div>
+      </div>
+      <div class="card">
+        <div>
+          <span class="pill">Spin-off 3</span>
+          <h3 style="margin-top:8px">GlowGrid Studio</h3>
+          <p class="muted">iCloud-to-Windows media drop and upload-consistency radar for 5-to-9 creators.</p>
+          <ul>
+            <li>4K clips staged from iCloud, edited on Windows, no cable</li>
+            <li>4-stage radar: film, edit, prime upload, sponsor report</li>
+            <li>2-tap native handoff into IG Reels or TikTok</li>
+          </ul>
+        </div>
+        <div>
+          <div class="price">$19–$29<small>per month · $199/yr · $49 vault</small></div>
+          <a class="btn line sm" href="./workspace.html?mode=glowgrid" style="margin-top:10px">Open the creator radar &rarr;</a>
+        </div>
+      </div>
+      <div class="card flagship">
+        <div>
+          <span class="pill" style="background:#fef3c7">Flagship</span>
+          <h3 style="margin-top:8px">Aurelia OS suite</h3>
+          <p class="muted">All three engines under one roof, with the unified daily timeline.</p>
+          <ul>
+            <li>Voice-to-authority + board dossier + creator drop</li>
+            <li>Energy-aware "camera-ready vs deep-exec" scheduling</li>
+            <li>One subscription, unlimited cloud pointers</li>
+          </ul>
+        </div>
+        <div>
+          <div class="price">$149<small>per month all-access · upgrade in 1 click</small></div>
+          <a class="btn sm" href="./workspace.html?mode=all" style="margin-top:10px">Open the full suite &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <span class="kicker">How it works</span>
+    <h2>Three moves a day. No migration, no new storage bill.</h2>
+    <div class="grid-3" style="margin-top:18px">
+      <div class="step">
+        <div class="num">1</div>
+        <h3>Index, don't ingest</h3>
+        <p class="muted">Aurelia records a sub-15 KB pointer plus a thumbnail for each asset and deep-links back with <code>icloud://</code>, <code>gdrive://</code> or <code>onedrive://</code>. Your 4K video and board PDFs stay exactly where they are.</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h3>Plan the real day</h3>
+        <p class="muted">Hard executive deadlines, publishing cadence and personal non-negotiables share one chronological timeline. Collisions are flagged before they bite, with a one-tap cascade that only moves flexible work.</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h3>Hand off in two taps</h3>
+        <p class="muted">The caption, proof asset and aspect ratio arrive in the native app ready to post. For executives, the EA attaches the proof and the exec approves from the phone — nobody chases anybody.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="trust-panel">
+      <span class="kicker" style="background:#fef3c7">Why the economics work</span>
+      <h2 style="margin-top:10px">Zero-blob architecture: the privacy story is the margin story</h2>
+      <p>Most creator tools store your video and pay egress on every view. We store a pointer. That single decision removes the bandwidth bill, dodges the six-month cloud security audits, and keeps your confidential board material inside the tenant your company already approved.</p>
+      <div class="trust-grid">
+        <div class="trust-box"><b>&lt;15 KB</b><span>metadata pointer per asset, plus a client-generated WebP thumbnail</span></div>
+        <div class="trust-box"><b>$0.00</b><span>server-side video egress, because the video never reaches us</span></div>
+        <div class="trust-box"><b>92–96%</b><span>gross margin per active user at $0.11–$0.15/mo infra + AI cost</span></div>
+        <div class="trust-box"><b>3 clouds</b><span>iCloud, OneDrive and Google Drive, indexed side by side</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing" style="background:#fff;border-top:2px solid #e7e5e4;border-bottom:2px solid #e7e5e4">
+  <div class="wrap">
+    <span class="kicker">Pricing</span>
+    <h2>Expense it, or don't. All prices in AUD, GST inclusive.</h2>
+    <p class="lede">Velvet Cadence, Sovereign Brief and the suite are B2B-expensable under Professional Development / PR Software. Every payment produces a GST tax invoice with ABN 61 794 639 443 and a finance approval memo for the corporate card.</p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Door</th><th>Price</th><th>Who it's for</th><th>Included</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Velvet Cadence — Solo</b></td>
+            <td>$49/mo</td>
+            <td>Solo consultant or founder publishing weekly</td>
+            <td>Voice-to-authority studio, cloud proof picker, carousel briefs</td>
+            <td><a class="btn line sm" href="./workspace.html?mode=velvet">Open</a></td>
+          </tr>
+          <tr>
+            <td><b>Velvet Cadence — Authority Pro</b></td>
+            <td>$99/mo</td>
+            <td>Executive with an active LinkedIn pipeline</td>
+            <td>Everything in Solo + consistency radar and prime-window scheduling</td>
+            <td><a class="btn line sm" href="./workspace.html?mode=velvet">Open</a></td>
+          </tr>
+          <tr>
+            <td><b>Velvet Cadence — Exec + EA</b></td>
+            <td>$149/mo</td>
+            <td>Executive and the EA or ghostwriter who supports her</td>
+            <td>Dual seat, delegated proof queue, 1-tap executive sign-off</td>
+            <td><a class="btn line sm" href="./workspace.html?mode=velvet">Open</a></td>
+          </tr>
+          <tr>
+            <td><b>Sovereign Brief</b></td>
+            <td>$39/mo<br>or $399/yr</td>
+            <td>Board director, VP, agency owner, chief of staff</td>
+            <td>Cross-cloud dossier radar, readiness scoring, cascade rescheduling</td>
+            <td><a class="btn line sm" href="./workspace.html?mode=sovereign">Open</a></td>
+          </tr>
+          <tr>
+            <td><b>GlowGrid Studio — Pro</b></td>
+            <td>$29/mo<br><span class="muted">$19 Starter · $199/yr</span></td>
+            <td>Creator moving iPhone footage onto a Windows edit bay</td>
+            <td>4-stage upload radar, 2-tap IG/TikTok handoff, media kit tracker</td>
+            <td><a class="btn line sm" href="./workspace.html?mode=glowgrid">Open</a></td>
+          </tr>
+          <tr>
+            <td><b>Aurelia OS — All-access suite</b></td>
+            <td>$149/mo</td>
+            <td>Operator running work, board and brand at once</td>
+            <td>All three engines, unified timeline, unlimited pointers</td>
+            <td><a class="btn sm" href="./workspace.html?mode=all">Open</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" style="margin-top:12px">Card checkout runs through Stripe or Lemon Squeezy (merchant of record for global tax); corporate buyers can request a direct EFT invoice instead. The live workspace shows the generated invoice and both checkout paths before you pay anything.</p>
+    <div class="cta-row">
+      <a class="btn" href="./workspace.html#b2bPanel">Generate an invoice &amp; checkout</a>
+      <a class="btn line" href="./deck.html">Read the commercial deck</a>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <span class="kicker">Questions worth asking</span>
+    <h2>Before you connect a cloud</h2>
+    <div style="margin-top:18px">
+      <details class="faq">
+        <summary>Do you store my video, board packs or client files?</summary>
+        <p>No. Aurelia keeps a metadata pointer (under 15 KB) and a small thumbnail, then hands you back a deep link into iCloud, Google Drive or OneDrive. The raw file is fetched by your own device from your own account. That is why there is no storage tier and no egress charge.</p>
+      </details>
+      <details class="faq">
+        <summary>Which platforms actually work today?</summary>
+        <p>The workspace demo runs in any modern browser and installs as a PWA on iOS, Android and Windows. The cloud pickers use Google Drive <code>drive.file</code>, the OneDrive file picker and the iOS Capacitor EventKit / photo-library bridge, so no six-month provider security audit is triggered.</p>
+      </details>
+      <details class="faq">
+        <summary>Can I put this on a corporate card?</summary>
+        <p>Yes for Velvet Cadence, Sovereign Brief and the Aurelia OS suite. The workspace generates an Australian GST tax invoice (ABN 61 794 639 443) coded to Professional Development / Executive Communications &amp; PR Software, plus a one-click finance approval memo. GlowGrid Studio is positioned as an individual creator tool.</p>
+      </details>
+      <details class="faq">
+        <summary>What happens if I start on a spin-off and later want the suite?</summary>
+        <p>All four doors share the same <code>cloud_assets</code> and <code>command_items</code> schema, so the upgrade is a plan change rather than a migration. Your pointers, items and history stay exactly where they are.</p>
+      </details>
+      <details class="faq">
+        <summary>Can I see the numbers before I buy?</summary>
+        <p>Yes — the <a href="./deck.html">commercial deck</a> carries the unit economics, the 30-day sprint model and a live MRR simulator. The <a href="./clients.html">100-client CRM board</a> and the <a href="./outreach.html">outreach console</a> are public too: this is a working build, not a waitlist.</p>
+      </details>
+      <details class="faq">
+        <summary>How do I get support?</summary>
+        <p>Open an issue on the <a href="https://github.com/deano1983/aurelia-os/issues" target="_blank" rel="noopener">project repository</a>. Payment, invoice and refund questions are handled by the merchant of record that processed the transaction.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="final">
+      <span class="kicker" style="background:#fef3c7">Two minutes, no signup</span>
+      <h2 style="margin-top:12px">Open the workspace and dictate one post</h2>
+      <p>Load the demo state, attach a proof chart from a cloud pointer, generate the carousel, then check the invoice path. Nothing to install, nothing to connect, nothing to pay to look.</p>
+      <div class="cta-row" style="justify-content:center">
+        <a class="btn" href="./workspace.html">Open the live workspace &rarr;</a>
+        <a class="btn ghost" href="./workspace.html#b2bPanel">See checkout &amp; GST invoice</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h5>Aurelia OS</h5>
+        <p style="margin:0">The sovereign command suite for modern women of influence. Cross-cloud, cross-OS, zero-blob.</p>
       </div>
       <div>
-        <label for="proofAssetSelect" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">2. Attach Cross-Cloud Proof Pointer:</label>
-        <select id="proofAssetSelect" onchange="runVoice()"></select>
+        <h5>Product</h5>
+        <ul>
+          <li><a href="./workspace.html">Live workspace</a></li>
+          <li><a href="./workspace.html?mode=velvet">Velvet Cadence</a></li>
+          <li><a href="./workspace.html?mode=sovereign">Sovereign Brief</a></li>
+          <li><a href="./workspace.html?mode=glowgrid">GlowGrid Studio</a></li>
+          <li><a href="./workspace.html#b2bPanel">Checkout &amp; GST invoice</a></li>
+        </ul>
       </div>
-      <div style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap">
-        <button class="outline" id="micBtn" onclick="toggleVoiceDictation()">&#127897; Dictate Live Voice Note</button>
-        <button class="gold" onclick="runVoice()">Generate LinkedIn Post + 4-Slide Carousel + Video Hook</button>
+      <div>
+        <h5>Business</h5>
+        <ul>
+          <li><a href="./deck.html">Commercial deck</a></li>
+          <li><a href="./clients.html">100-client CRM</a></li>
+          <li><a href="./outreach.html">Outreach console</a></li>
+          <li><a href="https://github.com/deano1983/aurelia-os" target="_blank" rel="noopener">Repository</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Contact</h5>
+        <ul>
+          <li><a href="https://github.com/deano1983/aurelia-os/issues" target="_blank" rel="noopener">Support &amp; issues</a></li>
+          <li>ABN 61 794 639 443</li>
+          <li>Brisbane, Australia</li>
+        </ul>
       </div>
     </div>
-    <div id="voiceOut" style="margin-top:12px"></div>
-  </div>
-
-  <div class="grid">
-    <div class="panel" id="b2bPanel">
-      <h2>
-        <span>B2B Corporate Expense Checkout &amp; Tax Invoice Generator</span>
-        <span class="badge b-executive">100% Expensable</span>
-      </h2>
-      <div style="font-size:14px;color:#475569;margin-bottom:10px">
-        Generates an instant Australian Tax Invoice (<code>ABN 61 794 639 443</code>) pre-coded under <b>Professional Development / Executive Communications &amp; PR Software</b> + a 1-click Finance Approval Memo.
-      </div>
-      <div class="form-grid">
-        <div style="grid-column: 1 / -1">
-          <label for="invPlan" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Select Product Door / Subscription Tier:</label>
-          <select id="invPlan" onchange="renderInvoice()"></select>
-        </div>
-        <div>
-          <label for="invBuyer" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Executive / Buyer Name:</label>
-          <input id="invBuyer" type="text" value="Sarah Jenkins, Managing Director" oninput="renderInvoice()">
-        </div>
-        <div>
-          <label for="invCompany" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Company / Entity Name:</label>
-          <input id="invCompany" type="text" value="Meridian Advisory Partners Pty Ltd" oninput="renderInvoice()">
-        </div>
-      </div>
-      <div id="invoiceOut"></div>
-    </div>
-
-    <div class="panel" id="partnerPanel">
-      <h2>
-        <span>Zero-Ad-Spend Distribution &amp; Partner Affiliate Engine</span>
-        <span class="badge b-ready">30%&ndash;35% Recurring</span>
-      </h2>
-      <div style="font-size:14px;color:#475569;margin-bottom:10px">
-        1-Click copyable outbound partner pitches &amp; viral loops for our 3 distribution hubs: LinkedIn Ghostwriters, Executive Assistant Networks, and Creator Coaches.
-      </div>
-      <div style="margin-bottom:10px">
-        <label for="partnerChannelSelect" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Select Distribution Partner Channel:</label>
-        <select id="partnerChannelSelect" onchange="renderPartnerKit()">
-          <option value="ghostwriters">1. LinkedIn Ghostwriters &amp; Personal Brand Agencies (Velvet Cadence — 30% Recurring)</option>
-          <option value="ea_networks">2. Executive Assistant (EA) Networks &amp; Virtual PA Agencies (Sovereign Brief — $100 Bounty / 25%)</option>
-          <option value="creator_coaches">3. TikTok / IG Reels UGC &amp; Creator Coaches (GlowGrid Studio — 35% Recurring)</option>
-        </select>
-      </div>
-      <div id="partnerOut"></div>
+    <div class="legal">
+      © 2026 Aurelia OS. Prices in AUD and GST inclusive. Files remain in your iCloud, Google Drive or OneDrive account; Aurelia OS stores index metadata only. Card payments are processed by Stripe or Lemon Squeezy as merchant of record — their terms, privacy policy and refund process apply to the transaction. Product screenshots show the live demo data set.
     </div>
   </div>
-</div>
-
-<div id="handoffModal" class="modal-backdrop" onclick="if(event.target===this)closeHandoffModal()">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="handoffModalTitle">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:3px solid #d4af37;padding-bottom:8px;margin-bottom:12px">
-      <h3 id="handoffModalTitle">Assisted 2-Tap Native Handoff</h3>
-      <button class="outline sm" onclick="closeHandoffModal()">Close &times;</button>
-    </div>
-    <div id="handoffModalBody"></div>
-  </div>
-</div>
-
-<div id="toast" class="toast"></div>
-
-<script src="./engine-client.js"></script>
-<script src="./app.js"></script>
+</footer>
 </body>
 </html>
+
