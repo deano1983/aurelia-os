@@ -87,10 +87,11 @@ const server = http.createServer(async (req, res) => {
       const item = state.items.find((i) => i.id === b.itemId) || state.items[0];
       return send(res, 200, engine.handoffPacket(item, state.assets, b.target));
     }
-    if (req.method === 'GET') {
+    if (req.method === 'GET' || req.method === 'HEAD') {
       const file = path.join(PUBLIC, u.pathname === '/' ? 'index.html' : u.pathname);
       if (file.startsWith(PUBLIC) && fs.existsSync(file) && fs.statSync(file).isFile()) {
         res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'text/plain; charset=utf-8' });
+        if (req.method === 'HEAD') return res.end();
         return fs.createReadStream(file).pipe(res);
       }
     }
