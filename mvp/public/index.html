@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1e1b2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Aurelia OS">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>Aurelia OS — Sovereign Command Suite (1 Flagship + 3 Spin-Offs)</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif;background:#faf8f5;color:#18181b;font-size:clamp(15px,1.8vw,17px);font-weight:700;line-height:1.5}
+.top{background:linear-gradient(135deg,#1e1b2e 0%,#2a2440 100%);color:#fff;padding:clamp(14px,2.5vw,20px) clamp(12px,3vw,28px);border-bottom:4px solid #d4af37;display:flex;flex-direction:column;gap:14px}
+.top-bar{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px}
+.top h1{font-size:clamp(19px,2.8vw,26px);font-weight:900;margin:0 0 4px 0;color:#f8fafc}
+.subhead{font-size:clamp(13px,1.7vw,15px);color:#fde68a;font-weight:700}
+.header-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.deck-link{display:inline-flex;align-items:center;gap:6px;background:#d4af37;color:#1e1b2e;text-decoration:none;padding:9px 14px;border-radius:8px;font-size:clamp(13px,1.6vw,15px);font-weight:900;border:2px solid #fde68a;white-space:nowrap}
+.deck-link:hover{background:#fde68a}
+.tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px;width:100%}
+.tab{background:#312e48;color:#fff;border:2px solid #d4af37;padding:10px 12px;border-radius:8px;font-size:clamp(13px,1.6vw,15px);font-weight:800;cursor:pointer;text-align:center}
+.tab.active{background:#d4af37;color:#1e1b2e;box-shadow:0 0 0 2px #fde68a}
+.wrap{max-width:1340px;width:100%;margin:clamp(12px,2.5vw,22px) auto;padding:0 clamp(10px,2.5vw,22px) 36px}
+.mode-banner{background:#1e1b2e;color:#f8fafc;border-left:6px solid #d4af37;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px;margin-bottom:16px}
+.kpi{background:#fff;border:2px solid #d6d3d1;border-top:4px solid #d4af37;border-radius:10px;padding:12px 14px}
+.kpi-label{font-size:12px;text-transform:uppercase;color:#475569;letter-spacing:.04em}
+.kpi-val{font-size:clamp(18px,2.3vw,23px);font-weight:900;color:#1e1b2e;margin-top:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:18px;align-items:start}
+.panel{background:#fff;border:2px solid #d6d3d1;border-radius:12px;padding:clamp(12px,2.5vw,20px);margin-bottom:18px;width:100%}
+.panel h2{font-size:clamp(17px,2.2vw,21px);font-weight:900;margin:0 0 12px;color:#1e1b2e;border-bottom:3px solid #d4af37;padding-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:12px;font-weight:900;text-transform:uppercase;margin:0 5px 4px 0;background:#e2e8f0;color:#1e293b}
+.b-icloud{background:#e0f2fe;color:#0369a1}.b-onedrive{background:#dbeafe;color:#1d4ed8}.b-gdrive{background:#dcfce7;color:#15803d}
+.b-executive{background:#fae8ff;color:#86198f}.b-creator{background:#fef3c7;color:#b45309}.b-personal{background:#dcfce7;color:#166534}
+.b-ready{background:#dcfce7;color:#166534;border:1px solid #15803d}.b-action{background:#fef3c7;color:#92400e;border:1px solid #d97706}
+.card{background:#f8fafc;border:2px solid #cbd5e1;border-radius:10px;padding:14px;margin-bottom:12px;word-break:break-word}
+.warn{background:#fff7ed;border:3px solid #ea580c;color:#9a3412;padding:14px;border-radius:10px;margin-bottom:16px;font-size:clamp(14px,1.9vw,17px);font-weight:800;word-break:break-word;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.ok-banner{background:#f0fdf4;border:2px solid #15803d;color:#166534;padding:12px 14px;border-radius:10px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+button{background:#1e1b2e;color:#fff;border:0;padding:9px 14px;border-radius:8px;font-size:clamp(13px,1.7vw,15px);font-weight:800;cursor:pointer;max-width:100%}
+button.gold{background:#d4af37;color:#1e1b2e}
+button.outline{background:#fff;color:#1e1b2e;border:2px solid #1e1b2e}
+button.sm{padding:6px 10px;font-size:13px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+input,select,textarea{width:100%;padding:9px 11px;border:2px solid #94a3b8;border-radius:8px;font-size:15px;font-weight:700;font-family:inherit;background:#fff;color:#18181b}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px;margin-bottom:12px}
+.rem{font-size:clamp(12.5px,1.6vw,14px);color:#334155;margin-top:8px;padding-left:10px;border-left:3px solid #d4af37}
+.rem-stage{display:inline-block;background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:900;margin-right:4px}
+code{word-break:break-all;background:#e2e8f0;padding:2px 5px;border-radius:4px;font-size:13px}
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.72);z-index:999;padding:14px;overflow-y:auto;align-items:center;justify-content:center}
+.modal-backdrop.open{display:flex}
+.modal{background:#fff;border:3px solid #d4af37;border-radius:14px;max-width:640px;width:100%;padding:clamp(14px,3vw,22px);color:#18181b;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.modal h3{margin:0 0 8px 0;font-size:clamp(18px,2.4vw,22px);color:#1e1b2e}
+.toast{position:fixed;bottom:16px;right:16px;background:#1e1b2e;color:#fde68a;border:2px solid #d4af37;padding:10px 16px;border-radius:8px;font-size:14px;font-weight:800;z-index:1000;display:none}
+@media(max-width:600px){.top-bar{flex-direction:column;align-items:stretch}.deck-link{justify-content:center;width:100%}.tabs{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="top-bar">
+    <div>
+      <h1>AURELIA OS &mdash; Cross-Cloud Executive &amp; Creator Hub</h1>
+      <div class="subhead">iOS (iCloud) &bull; Windows (OneDrive) &bull; Android (Google Drive) &bull; Zero-Blob Relay ($0 Video Egress)</div>
+    </div>
+    <div class="header-actions">
+      <button class="gold sm" id="installPwaBtn" onclick="installAppPrompt()" title="Install Aurelia OS on Windows Desktop, iOS Home Screen, or Android">&#128242; Install App (iOS / Win / Android)</button>
+      <button class="outline sm" onclick="resetDemo()" title="Restore default demo state &amp; collision scenario">&#8635; Reset Demo</button>
+      <a class="deck-link" href="./clients.html" style="background:#312e48;color:#fde68a">100-Client Outbound CRM &rarr;</a>
+      <a class="deck-link" href="./deck.html">View Product &amp; Viability Deck &rarr;</a>
+    </div>
+  </div>
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-mode="all" onclick="setMode('all',this)">Flagship: Aurelia OS ($79-$199/mo)</button>
+    <button class="tab" data-mode="velvet" onclick="setMode('velvet',this)">1: Velvet Cadence ($49-$149/mo)</button>
+    <button class="tab" data-mode="sovereign" onclick="setMode('sovereign',this)">2: Sovereign Brief ($39/mo)</button>
+    <button class="tab" data-mode="glowgrid" onclick="setMode('glowgrid',this)">3: GlowGrid Studio ($19-$29/mo)</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="modeBanner" class="mode-banner"></div>
+  <div id="kpiStrip" class="kpi-strip"></div>
+  <div id="collisionBox"></div>
+
+  <div class="grid">
+    <div class="panel" id="timelinePanel">
+      <h2>
+        <span id="timelineTitle">Unified Daily Command Timeline (Reports, Uploads &amp; Life)</span>
+        <span class="badge" id="timelineCountBadge">4 Active</span>
+      </h2>
+      <div id="timeline"></div>
+    </div>
+
+    <div class="panel" id="vaultPanel">
+      <h2>
+        <span>Cross-Cloud Zero-Blob Asset Vault (iCloud &middot; OneDrive &middot; GDrive)</span>
+        <span class="badge b-ready">$0.00 Egress</span>
+      </h2>
+      <div id="metrics" style="margin-bottom:12px;color:#15803d;font-size:15px"></div>
+
+      <div class="card" style="background:#fefce8;border-color:#d4af37">
+        <div style="font-size:14px;color:#1e1b2e;margin-bottom:8px">+ Index New Cross-Cloud Asset Pointer (Zero Server Upload)</div>
+        <div class="form-grid">
+          <input id="newAssetTitle" type="text" placeholder="Asset title (e.g. Q4 Board Keynote.key)" value="iPhone 16 Pro Vertical Reel Cut #4.mov">
+          <select id="newAssetProvider">
+            <option value="icloud">Apple iCloud (iOS / macOS)</option>
+            <option value="onedrive">Microsoft OneDrive (Windows)</option>
+            <option value="gdrive">Google Drive (Android / Workspace)</option>
+          </select>
+          <select id="newAssetDomain">
+            <option value="creator">Creator Media</option>
+            <option value="executive">Executive Dossier</option>
+            <option value="personal">Personal / Life</option>
+          </select>
+          <input id="newAssetSize" type="number" min="1" max="5000" value="320" placeholder="Size (MB)">
+        </div>
+        <button class="gold sm" onclick="addAssetPointer()">+ Link Cloud Pointer (12 KB Index / $0.00 Egress)</button>
+      </div>
+
+      <div id="assets"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="velvetPanel">
+    <h2>
+      <span>Velvet Cadence: 90-Second Voice Note + Cloud Proof &rarr; LinkedIn Authority Bundle</span>
+      <span class="badge b-creator">Voice-to-Authority Studio</span>
+    </h2>
+    <div class="form-grid">
+      <div style="grid-column: 1 / -1">
+        <label for="voiceIn" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">1. Executive Voice Transcript (90-second capture):</label>
+        <textarea id="voiceIn" rows="2">We cut residential construction quoting from 2 weeks to 10 minutes by pairing a deterministic BOQ engine with automated supplier substitutions.</textarea>
+      </div>
+      <div>
+        <label for="proofAssetSelect" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">2. Attach Cross-Cloud Proof Pointer:</label>
+        <select id="proofAssetSelect" onchange="runVoice()"></select>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap">
+        <button class="outline" id="micBtn" onclick="toggleVoiceDictation()">&#127897; Dictate Live Voice Note</button>
+        <button class="gold" onclick="runVoice()">Generate LinkedIn Post + 4-Slide Carousel + Video Hook</button>
+      </div>
+    </div>
+    <div id="voiceOut" style="margin-top:12px"></div>
+  </div>
+
+  <div class="grid">
+    <div class="panel" id="b2bPanel">
+      <h2>
+        <span>B2B Corporate Expense Checkout &amp; Tax Invoice Generator</span>
+        <span class="badge b-executive">100% Expensable</span>
+      </h2>
+      <div style="font-size:14px;color:#475569;margin-bottom:10px">
+        Generates an instant Australian Tax Invoice (<code>ABN 61 794 639 443</code>) pre-coded under <b>Professional Development / Executive Communications &amp; PR Software</b> + a 1-click Finance Approval Memo.
+      </div>
+      <div class="form-grid">
+        <div style="grid-column: 1 / -1">
+          <label for="invPlan" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Select Product Door / Subscription Tier:</label>
+          <select id="invPlan" onchange="renderInvoice()"></select>
+        </div>
+        <div>
+          <label for="invBuyer" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Executive / Buyer Name:</label>
+          <input id="invBuyer" type="text" value="Sarah Jenkins, Managing Director" oninput="renderInvoice()">
+        </div>
+        <div>
+          <label for="invCompany" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Company / Entity Name:</label>
+          <input id="invCompany" type="text" value="Meridian Advisory Partners Pty Ltd" oninput="renderInvoice()">
+        </div>
+      </div>
+      <div id="invoiceOut"></div>
+    </div>
+
+    <div class="panel" id="partnerPanel">
+      <h2>
+        <span>Zero-Ad-Spend Distribution &amp; Partner Affiliate Engine</span>
+        <span class="badge b-ready">30%&ndash;35% Recurring</span>
+      </h2>
+      <div style="font-size:14px;color:#475569;margin-bottom:10px">
+        1-Click copyable outbound partner pitches &amp; viral loops for our 3 distribution hubs: LinkedIn Ghostwriters, Executive Assistant Networks, and Creator Coaches.
+      </div>
+      <div style="margin-bottom:10px">
+        <label for="partnerChannelSelect" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Select Distribution Partner Channel:</label>
+        <select id="partnerChannelSelect" onchange="renderPartnerKit()">
+          <option value="ghostwriters">1. LinkedIn Ghostwriters &amp; Personal Brand Agencies (Velvet Cadence — 30% Recurring)</option>
+          <option value="ea_networks">2. Executive Assistant (EA) Networks &amp; Virtual PA Agencies (Sovereign Brief — $100 Bounty / 25%)</option>
+          <option value="creator_coaches">3. TikTok / IG Reels UGC &amp; Creator Coaches (GlowGrid Studio — 35% Recurring)</option>
+        </select>
+      </div>
+      <div id="partnerOut"></div>
+    </div>
+  </div>
+</div>
+
+<div id="handoffModal" class="modal-backdrop" onclick="if(event.target===this)closeHandoffModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="handoffModalTitle">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:3px solid #d4af37;padding-bottom:8px;margin-bottom:12px">
+      <h3 id="handoffModalTitle">Assisted 2-Tap Native Handoff</h3>
+      <button class="outline sm" onclick="closeHandoffModal()">Close &times;</button>
+    </div>
+    <div id="handoffModalBody"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="./engine-client.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

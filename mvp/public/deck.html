@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurelia OS — Investor &amp; Commercial Showcase Deck (Flagship + 3 Spin-Offs)</title>
+<style>
+*{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden;margin:0;padding:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#faf8f5;color:#18181b;font-size:clamp(16px,2vw,18px);font-weight:700;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.topbar{background:#1e1b2e;color:#f8fafc;padding:clamp(14px,2.8vw,20px) clamp(14px,3.5vw,32px);border-bottom:4px solid #d4af37;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;position:sticky;top:0;z-index:50}
+.brand-title{font-size:clamp(20px,3vw,28px);font-weight:900;margin:0;color:#fff}
+.brand-sub{font-size:clamp(13px,1.7vw,15px);color:#fde68a;font-weight:800;margin-top:2px}
+.nav-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn-nav{background:#d4af37;color:#1e1b2e;border:2px solid #fde68a;padding:10px 16px;border-radius:8px;font-size:clamp(14px,1.8vw,16px);font-weight:900;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-align:center}
+.btn-nav.secondary{background:#312e48;color:#fff;border-color:#d4af37}
+.wrap{max-width:1340px;width:100%;margin:0 auto;padding:clamp(16px,3vw,28px) clamp(12px,3vw,24px)}
+.hero{background:linear-gradient(135deg,#1e1b2e 0%,#2e2647 100%);color:#fff;border:3px solid #d4af37;border-radius:16px;padding:clamp(18px,4vw,34px);margin-bottom:clamp(18px,3vw,26px)}
+.kicker{display:inline-block;background:#d4af37;color:#1e1b2e;padding:6px 12px;border-radius:6px;font-size:clamp(12px,1.5vw,14px);font-weight:900;text-transform:uppercase;margin-bottom:12px}
+.hero h2{font-size:clamp(24px,4vw,42px);font-weight:900;line-height:1.15;margin:0 0 12px;color:#fff}
+.hero p{font-size:clamp(16px,2vw,20px);color:#e2e8f0;margin:0 0 20px;max-width:980px;font-weight:700}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:14px;margin-top:16px}
+.kpi{background:rgba(255,255,255,0.08);border:2px solid rgba(212,175,55,0.65);border-radius:12px;padding:clamp(12px,2.2vw,18px)}
+.kpi-val{font-size:clamp(22px,3.2vw,32px);font-weight:900;color:#fde68a;line-height:1.1}
+.kpi-lbl{font-size:clamp(13px,1.6vw,15px);color:#f1f5f9;margin-top:6px;font-weight:800}
+.deck-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.dtab{background:#fff;color:#1e1b2e;border:2px solid #1e1b2e;padding:10px 14px;border-radius:10px;font-size:clamp(14px,1.8vw,16px);font-weight:900;cursor:pointer;flex:1 1 auto;text-align:center}
+.dtab.active{background:#1e1b2e;color:#fde68a;border-color:#d4af37}
+.section{background:#fff;border:2px solid #d6d3d1;border-radius:14px;padding:clamp(16px,3vw,26px);margin-bottom:clamp(18px,3vw,26px);width:100%}
+.section-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;border-bottom:3px solid #d4af37;padding-bottom:10px;margin-bottom:18px}
+.section h3{font-size:clamp(20px,2.8vw,28px);font-weight:900;margin:0;color:#1e1b2e}
+.pill{display:inline-block;padding:5px 10px;border-radius:6px;font-size:clamp(12px,1.5vw,14px);font-weight:900;text-transform:uppercase;background:#fef3c7;color:#92400e;border:1px solid #f59e0b}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,275px),1fr));gap:16px}
+.suite-card{background:#f8fafc;border:2px solid #cbd5e1;border-radius:12px;padding:clamp(14px,2.5vw,20px);display:flex;flex-direction:column;justify-content:space-between;word-break:break-word}
+.suite-card.flagship{background:#1e1b2e;color:#fff;border:3px solid #d4af37}
+.suite-card h4{font-size:clamp(18px,2.3vw,22px);font-weight:900;margin:6px 0 8px}
+.suite-card.flagship h4{color:#fde68a}
+.price-tag{font-size:clamp(20px,2.6vw,26px);font-weight:900;color:#15803d;margin:8px 0}
+.suite-card.flagship .price-tag{color:#fde68a}
+.badge{display:inline-block;padding:4px 8px;border-radius:6px;font-size:12px;font-weight:900;text-transform:uppercase;margin:0 6px 6px 0;background:#e2e8f0;color:#1e293b}
+.b-icloud{background:#e0f2fe;color:#0369a1}.b-onedrive{background:#dbeafe;color:#1d4ed8}.b-gdrive{background:#dcfce7;color:#15803d}.b-gold{background:#fef3c7;color:#92400e}
+.arch-flow,.econ-grid,.sim-controls,.sprint-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px;margin-top:12px}
+.arch-node,.econ-box,.sprint-card{background:#f8fafc;border:2px solid #cbd5e1;border-radius:12px;padding:16px;word-break:break-word}
+.arch-node.core{background:#1e1b2e;color:#fff;border:3px solid #d4af37}
+.sprint-card{background:#faf8f5;border-color:#d4af37}
+.arch-node h5,.sprint-card h5{font-size:clamp(16px,2vw,19px);font-weight:900;margin:0 0 8px;color:#1e1b2e}
+.arch-node.core h5{color:#fde68a}
+.econ-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #e2e8f0;font-size:clamp(14px,1.8vw,16px)}
+.econ-row:last-child{border-bottom:0}
+.sim-controls{background:#f1f5f9;padding:16px;border-radius:12px;border:2px solid #cbd5e1;margin-bottom:16px}
+.sim-item label{display:block;font-size:clamp(14px,1.7vw,16px);font-weight:900;margin-bottom:6px;color:#1e1b2e}
+.sim-item input[type=range]{width:100%;accent-color:#1e1b2e;cursor:pointer}
+ul.tight{margin:8px 0 0;padding-left:20px}
+ul.tight li{margin-bottom:6px;font-size:clamp(14px,1.8vw,16px)}
+code{background:#e2e8f0;color:#0f172a;padding:2px 6px;border-radius:4px;word-break:break-all;font-size:0.9em}
+.suite-card.flagship code,.arch-node.core code{background:#312e48;color:#fde68a}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div>
+    <h1 class="brand-title">AURELIA OS &mdash; Investor &amp; Commercial Architecture Deck</h1>
+    <div class="brand-sub">1 Flagship Suite + 3 High-Margin Spin-Offs &bull; iOS (iCloud) + Windows (OneDrive) + Android (GDrive)</div>
+  </div>
+  <nav class="nav-actions" aria-label="Primary Navigation">
+    <a class="btn-nav" href="./">&larr; Open Live Interactive Workspace (/)</a>
+    <a class="btn-nav secondary" href="./clients.html">100-Client Outbound CRM &rarr;</a>
+    <a class="btn-nav secondary" href="#economics">Unit Economics &amp; $10k MRR</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <span class="kicker">Higgsfield 4-Week Venture Blueprint &bull; Commercial Due Diligence</span>
+    <h2>The Sovereign Command Suite for High-Output Women Operating Across iPhone, Windows &amp; Multi-Cloud</h2>
+    <p>Existing tools force female executives, LinkedIn authority builders, and 5-to-9 creators into a broken split-brain workflow: shooting 4K video &amp; voice notes on <strong>iOS (iCloud)</strong> or <strong>Android</strong> while managing corporate board reports, proof decks, and sponsor briefs on a <strong>Windows PC (OneDrive / Google Drive)</strong>. Aurelia OS unifies all three clouds with <strong>$0.00 video bandwidth egress</strong>.</p>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-val">92.4%&ndash;96.7%</div>
+        <div class="kpi-lbl">Net Software Gross Margin (&lt;$0.12/mo Infra+AI per User)</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-val">$0.00</div>
+        <div class="kpi-lbl">Server Video Egress (Zero-Blob Metadata Pointer Index)</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-val">$10,845 MRR</div>
+        <div class="kpi-lbl">30-Day Launch Sprint Target (215 Paying Subscribers)</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-val">14&ndash;26 Days</div>
+        <div class="kpi-lbl">CAC Payback Period Across B2B Expense &amp; Annual Charters</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="deck-tabs" role="tablist" aria-label="Filter Deck Focus">
+    <button class="dtab active" onclick="filterDeck('all',this)">All Slides (Full Investor &amp; GTM Deck)</button>
+    <button class="dtab" onclick="filterDeck('suite',this)">1. The 1+3 Product Matrix</button>
+    <button class="dtab" onclick="filterDeck('arch',this)">2. Zero-Blob Cloud Architecture</button>
+    <button class="dtab" onclick="filterDeck('econ',this)">3. Unit Economics &amp; $10k MRR Simulator</button>
+    <button class="dtab" onclick="filterDeck('gtm',this)">4. 30-Day Go-To-Market Playbook</button>
+  </div>
+
+  <!-- SLIDE 1: 1+3 PRODUCT SUITE -->
+  <section class="section deck-section" data-sec="suite" id="products">
+    <div class="section-head">
+      <h3>1. The 1+3 Product Portfolio: Three Fast-Monetizing Wedges Feeding One Flagship OS</h3>
+      <span class="pill">Shared Monorepo &amp; SQLite Schema</span>
+    </div>
+    <div class="grid-4">
+      <article class="suite-card">
+        <div>
+          <span class="badge b-gold">Spin-Off #1 &bull; Rank #1 to $10k MRR</span>
+          <span class="badge b-onedrive">B2B Expensable</span>
+          <h4>VELVET CADENCE</h4>
+          <div class="price-tag">$49 / $99 / $149 per mo</div>
+          <p><strong>Target:</strong> Successful women on LinkedIn, female founders, fractional executives &amp; B2B consultants.</p>
+          <ul class="tight">
+            <li><strong>90-Sec Voice-to-Authority:</strong> Dictate on iOS/Android between meetings &rarr; executive LinkedIn post, carousel brief &amp; 45s video script.</li>
+            <li><strong>Cross-Cloud Proof Drawer:</strong> 1-click attach charts &amp; PDFs from Windows OneDrive or Google Drive.</li>
+            <li><strong>Dual EA Seat ($149/mo):</strong> Ghostwriter/EA approval handoff.</li>
+          </ul>
+        </div>
+        <div style="margin-top:12px;padding-top:10px;border-top:2px solid #e2e8f0;font-size:14px">
+          <strong>LTV:CAC:</strong> 45.3x &bull; <strong>Churn:</strong> 2.6%/mo
+        </div>
+      </article>
+      <article class="suite-card">
+        <div>
+          <span class="badge b-gold">Spin-Off #2 &bull; Highest Upfront Cash</span>
+          <span class="badge b-icloud">Exec + Board Dossier</span>
+          <h4>SOVEREIGN BRIEF</h4>
+          <div class="price-tag">$39/mo or $399/yr Charter</div>
+          <p><strong>Target:</strong> Female VPs, C-suite executives, board directors &amp; multi-entity founders.</p>
+          <ul class="tight">
+            <li><strong>Tri-Cloud Deadline Radar:</strong> Unifies Windows OneDrive/Outlook reports, Google Drive board docs &amp; iOS iCloud/EventKit personal boundaries.</li>
+            <li><strong>Collision Detector:</strong> Flags when board deadlines, PR uploads &amp; family non-negotiables collide inside 48h.</li>
+            <li><strong>1-Tap Cascade Reschedule:</strong> Shifts non-hard blocks automatically.</li>
+          </ul>
+        </div>
+        <div style="margin-top:12px;padding-top:10px;border-top:2px solid #e2e8f0;font-size:14px">
+          <strong>LTV:CAC:</strong> 22.5x &bull; <strong>Payback:</strong> 14 Days (65% Annual)
+        </div>
+      </article>
+      <article class="suite-card">
+        <div>
+          <span class="badge b-gold">Spin-Off #3 &bull; Viral Volume Engine</span>
+          <span class="badge b-gdrive">iPhone &harr; Windows Drop</span>
+          <h4>GLOWGRID STUDIO</h4>
+          <div class="price-tag">$19&ndash;$29/mo + $49 Vaults</div>
+          <p><strong>Target:</strong> Aspiring female influencers &amp; 5-to-9 career/lifestyle creators (TikTok, Reels, Shorts).</p>
+          <ul class="tight">
+            <li><strong>Instant Media Drop:</strong> Shoot 4K on iPhone (iCloud) or Android &rarr; immediately indexed on Windows PC / GDrive / OneDrive with 0 duplicate bloat.</li>
+            <li><strong>Upload Consistency Engine:</strong> Multi-stage reminders (Film &rarr; Edit &rarr; Prime Upload &rarr; Sponsor Report).</li>
+            <li><strong>30% Recurring Affiliate Loop:</strong> Built into public Media Kit URLs.</li>
+          </ul>
+        </div>
+        <div style="margin-top:12px;padding-top:10px;border-top:2px solid #e2e8f0;font-size:14px">
+          <strong>LTV:CAC:</strong> 24.7x &bull; <strong>CAC:</strong> $18 via Reels/Affiliate
+        </div>
+      </article>
+      <article class="suite-card flagship">
+        <div>
+          <span class="badge b-gold">The Crown Jewel Flagship Hub</span>
+          <h4>AURELIA OS (ALL-ACCESS)</h4>
+          <div class="price-tag">$79&ndash;$199/mo ($799/yr)</div>
+          <p><strong>The Sovereign Command Suite:</strong> Unlocks all 3 engines in one unified iOS + Windows + Android workspace.</p>
+          <ul class="tight">
+            <li><strong>7:30 AM Sovereign Brief:</strong> Energy-weighted timeline (Camera-Ready vs. Deep-Exec vs. Recharge).</li>
+            <li><strong>All-Day Cross-Cloud Flow:</strong> Voice memos, 4K iCloud clips &amp; OneDrive board packs linked in one graph.</li>
+            <li><strong>Zero-Migration Upgrade:</strong> 1-click entitlement unlock from any Spin-Off.</li>
+          </ul>
+        </div>
+        <div style="margin-top:12px;padding-top:10px;border-top:2px solid rgba(212,175,55,0.5);font-size:14px;color:#fde68a">
+          <strong>Gross Margin:</strong> 96.7% &bull; <strong>Churn:</strong> 1.6%/mo
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- SLIDE 2: ZERO-BLOB METADATA POINTER ARCHITECTURE -->
+  <section class="section deck-section" data-sec="arch" id="architecture">
+    <div class="section-head">
+      <h3>2. Unfair Technical Wedge: Zero-Blob Metadata Pointer Architecture ($0.00 Video Egress)</h3>
+      <span class="pill">Zero Google CASA Audit &bull; Zero Meta API Delay</span>
+    </div>
+    <p style="margin-top:0">Competitors destroy their gross margins by uploading 640 MB 4K iPhone videos to AWS S3 and transcoding them—triggering $15k–$75k Google CASA Tier-2/3 security audits and corporate IT blocks. <strong>Aurelia OS separates the Control Plane from the Data Plane:</strong></p>
+    <div class="arch-flow">
+      <div class="arch-node">
+        <span class="badge b-icloud">Surface 1 &bull; Apple Ecosystem</span>
+        <h5>iOS / iCloud + EventKit Bridge</h5>
+        <p style="margin:0;font-size:15px">Capacitor 8 native bridge indexes <code>icloud://</code> 4K video URIs, generates a <code>&lt;25 KB</code> client-side WebP micro-thumbnail, and syncs Apple Reminders &amp; Siri voice notes to Windows in seconds.</p>
+      </div>
+      <div class="arch-node">
+        <span class="badge b-onedrive">Surface 2 &bull; Corporate Windows</span>
+        <h5>Windows PC / OneDrive + Outlook</h5>
+        <p style="margin:0;font-size:15px">Uses non-sensitive OneDrive File Picker (<code>Files.ReadWrite.Selected</code>) + bidirectional signed <code>.ICS</code> feed. Board <code>.xlsx</code> &amp; <code>.pptx</code> decks never leave corporate M365 storage.</p>
+      </div>
+      <div class="arch-node">
+        <span class="badge b-gdrive">Surface 3 &bull; Android &amp; Workspace</span>
+        <h5>Android / Google Drive Picker</h5>
+        <p style="margin:0;font-size:15px">Uses scoped <code>drive.file</code> Picker API (<strong>0-day approval, $0 CASA audit</strong>) + Assisted 2-Tap Native Handoff to LinkedIn, Instagram Reels, TikTok &amp; YouTube Shorts.</p>
+      </div>
+      <div class="arch-node core">
+        <span class="badge b-gold">Control Plane &bull; Node + SQLite CRDT</span>
+        <h5>&lt;15 KB Pointer Record</h5>
+        <p style="margin:0;font-size:15px">Syncs ULID, native URI (<code>icloud://</code>, <code>onedrive://</code>, <code>gdrive://</code>), 25KB preview, deadline state &amp; collision rules. <strong>Raw 672 MB assets stay in native clouds &rarr; $0.00 egress.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: INTERACTIVE UNIT ECONOMICS & $10K MRR SIMULATOR -->
+  <section class="section deck-section" data-sec="econ" id="economics">
+    <div class="section-head">
+      <h3>3. Interactive Unit Economics &amp; 30-Day $10k+ MRR Cohort Simulator</h3>
+      <span class="pill">Live Financial Model</span>
+    </div>
+    <div class="sim-controls">
+      <div class="sim-item">
+        <label for="simVelvet">Velvet Cadence Users ($79.50 avg ARPU): <span id="valVelvet">48</span></label>
+        <input id="simVelvet" type="range" min="10" max="150" value="48" oninput="updateEcon()">
+      </div>
+      <div class="sim-item">
+        <label for="simSovereign">Sovereign Brief Users ($35.20 avg ARPU): <span id="valSovereign">40</span></label>
+        <input id="simSovereign" type="range" min="10" max="150" value="40" oninput="updateEcon()">
+      </div>
+      <div class="sim-item">
+        <label for="simGlow">GlowGrid Studio Users ($23.00 avg ARPU): <span id="valGlow">95</span></label>
+        <input id="simGlow" type="range" min="20" max="300" value="95" oninput="updateEcon()">
+      </div>
+      <div class="sim-item">
+        <label for="simFlagship">Aurelia OS Flagship Users ($107.38 avg ARPU): <span id="valFlagship">32</span></label>
+        <input id="simFlagship" type="range" min="5" max="120" value="32" oninput="updateEcon()">
+      </div>
+    </div>
+    <div class="kpi-grid" style="margin-bottom:18px">
+      <div class="kpi" style="background:#1e1b2e;color:#fff">
+        <div class="kpi-val" id="outMrr">$10,845</div>
+        <div class="kpi-lbl">Simulated Monthly Recurring Revenue (MRR)</div>
+      </div>
+      <div class="kpi" style="background:#1e1b2e;color:#fff">
+        <div class="kpi-val" id="outArr">$130,140</div>
+        <div class="kpi-lbl">Annualized Run-Rate (ARR)</div>
+      </div>
+      <div class="kpi" style="background:#1e1b2e;color:#fff">
+        <div class="kpi-val" id="outInfra">$59.51/mo</div>
+        <div class="kpi-lbl">Total Server + AI Burn ($35 base + $0.114/user)</div>
+      </div>
+      <div class="kpi" style="background:#1e1b2e;color:#fff">
+        <div class="kpi-val" id="outMargin">95.4%</div>
+        <div class="kpi-lbl">Net Software Gross Margin (After Stripe + Infra + AI)</div>
+      </div>
+    </div>
+    <div class="econ-grid">
+      <div class="econ-box">
+        <h4 style="margin:0 0 10px;color:#1e1b2e">Velvet Cadence (Subset #1)</h4>
+        <div class="econ-row"><span>Tiers:</span><strong>$49 / $99 / $149 mo</strong></div>
+        <div class="econ-row"><span>Blended ARPU:</span><strong>$78.00 / mo</strong></div>
+        <div class="econ-row"><span>Gross Margin:</span><strong>96.1%</strong></div>
+        <div class="econ-row"><span>Blended CAC:</span><strong>$64 (LinkedIn + Outbound)</strong></div>
+        <div class="econ-row"><span>Gross Margin LTV:</span><strong>$2,899 (2.6% churn)</strong></div>
+        <div class="econ-row"><span>CAC Payback:</span><strong>26 Days (B2B Expensed)</strong></div>
+      </div>
+      <div class="econ-box">
+        <h4 style="margin:0 0 10px;color:#1e1b2e">Sovereign Brief (Subset #2)</h4>
+        <div class="econ-row"><span>Tiers:</span><strong>$39/mo or $399/yr</strong></div>
+        <div class="econ-row"><span>Blended ARPU:</span><strong>$36.50 / mo (65% annual)</strong></div>
+        <div class="econ-row"><span>Gross Margin:</span><strong>95.9%</strong></div>
+        <div class="econ-row"><span>Blended CAC:</span><strong>$82 (EA $100 Bounty)</strong></div>
+        <div class="econ-row"><span>Gross Margin LTV:</span><strong>$1,843 (1.9% churn)</strong></div>
+        <div class="econ-row"><span>CAC Payback:</span><strong>14 Days (Annual Upfront)</strong></div>
+      </div>
+      <div class="econ-box">
+        <h4 style="margin:0 0 10px;color:#1e1b2e">GlowGrid Studio (Subset #3)</h4>
+        <div class="econ-row"><span>Tiers:</span><strong>$19 / $29 mo + $49 Vault</strong></div>
+        <div class="econ-row"><span>Blended ARPU:</span><strong>$24.80 / mo</strong></div>
+        <div class="econ-row"><span>Gross Margin:</span><strong>93.4%</strong></div>
+        <div class="econ-row"><span>Blended CAC:</span><strong>$18 (Reels + 30% Affiliate)</strong></div>
+        <div class="econ-row"><span>Gross Margin LTV:</span><strong>$444 (5.2% churn)</strong></div>
+        <div class="econ-row"><span>CAC Payback:</span><strong>23 Days (w/ Vault Attach)</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: 30-DAY GO-TO-MARKET PLAYBOOK -->
+  <section class="section deck-section" data-sec="gtm" id="gtm">
+    <div class="section-head">
+      <h3>4. 30-Day Go-To-Market &amp; Distribution Playbook to $10,845 MRR</h3>
+      <span class="pill">Zero-Placeholder Execution</span>
+    </div>
+    <div class="sprint-list">
+      <div class="sprint-card">
+        <h5>Week 1 (Days 1&ndash;7): +$2,200 MRR</h5>
+        <p style="margin:0 0 8px;font-size:15px"><strong>Velvet Cadence Founding Executive Presale</strong></p>
+        <ul class="tight">
+          <li>B2B expense invoice generator (<em>"Professional Development &amp; Executive PR Software"</em>).</li>
+          <li>35 targeted LinkedIn voice DMs/day to female founders &amp; fractional executives.</li>
+          <li>Close first 25 Founding Members ($88 blended ARPU).</li>
+        </ul>
+      </div>
+      <div class="sprint-card">
+        <h5>Week 2 (Days 8&ndash;14): +$2,660 MRR</h5>
+        <p style="margin:0 0 8px;font-size:15px"><strong>LinkedIn Proof-Card Watermark Loop</strong></p>
+        <ul class="tight">
+          <li>Every exported OneDrive/iCloud proof carousel carries subtle <em>"Executive Proof via VelvetCadence.com"</em> footer.</li>
+          <li>7-Day "90 Seconds to Authority" cohort challenge with female leadership communities.</li>
+          <li>Add 35 paying subscribers ($4,860 cumulative MRR).</li>
+        </ul>
+      </div>
+      <div class="sprint-card">
+        <h5>Week 3 (Days 15&ndash;21): +$1,760 MRR</h5>
+        <p style="margin:0 0 8px;font-size:15px"><strong>Sovereign Brief EA Champion Blitz</strong></p>
+        <ul class="tight">
+          <li>Recruit 40 Executive Assistants with free Partner Seat + <strong>$100 instant referral bounty</strong> on $399/yr Executive Charters.</li>
+          <li>Pitch IT-safe Zero-Blob architecture to Women-on-Boards directors managing 3+ cloud tenants.</li>
+          <li>Close 50 users (+$12,768 upfront annual cash).</li>
+        </ul>
+      </div>
+      <div class="sprint-card">
+        <h5>Week 4 (Days 22&ndash;30): +$4,225 MRR</h5>
+        <p style="margin:0 0 8px;font-size:15px"><strong>GlowGrid Viral Reels + Flagship Upgrades</strong></p>
+        <ul class="tight">
+          <li>Seed 30 micro-creators with 18s split-screen Reel: <em>"Moving 4K iPhone B-roll to my Windows laptop in 10 seconds"</em> + 30% recurring affiliate link.</li>
+          <li>Add 95 GlowGrid users + 30 x $49 Hook Vaults.</li>
+          <li>Trigger 1-click <strong>Aurelia OS Flagship ($107 ARPU)</strong> upgrade for 22 existing users + 10 direct buyers &rarr; <strong>$10,845 MRR</strong>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+function filterDeck(sec, btn) {
+  document.querySelectorAll('.dtab').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.querySelectorAll('.deck-section').forEach(function(el) {
+    el.style.display = (sec === 'all' || el.getAttribute('data-sec') === sec) ? 'block' : 'none';
+  });
+}
+function updateEcon() {
+  var v = parseInt(document.getElementById('simVelvet').value, 10) || 0;
+  var s = parseInt(document.getElementById('simSovereign').value, 10) || 0;
+  var g = parseInt(document.getElementById('simGlow').value, 10) || 0;
+  var f = parseInt(document.getElementById('simFlagship').value, 10) || 0;
+  document.getElementById('valVelvet').textContent = v;
+  document.getElementById('valSovereign').textContent = s;
+  document.getElementById('valGlow').textContent = g;
+  document.getElementById('valFlagship').textContent = f;
+  var mrr = Math.round((v * 79.5) + (s * 35.2) + (g * 23.0) + (f * 107.38));
+  var arr = mrr * 12;
+  var totalUsers = v + s + g + f;
+  var infra = 35 + (totalUsers * 0.114);
+  var stripe = (mrr * 0.029) + (totalUsers * 0.30);
+  var netMargin = mrr > 0 ? (((mrr - infra - stripe) / mrr) * 100) : 0;
+  document.getElementById('outMrr').textContent = '$' + mrr.toLocaleString();
+  document.getElementById('outArr').textContent = '$' + arr.toLocaleString();
+  document.getElementById('outInfra').textContent = '$' + infra.toFixed(2) + '/mo';
+  document.getElementById('outMargin').textContent = netMargin.toFixed(1) + '%';
+}
+</script>
+</body>
+</html>

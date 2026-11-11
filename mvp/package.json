@@ -1,0 +1,10 @@
+{
+  "name": "aurelia-os-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aurelia OS — Cross-Cloud (iCloud, Google Drive, OneDrive) & Cross-Platform (iOS, Windows, Android) Executive & Creator Command Hub + 3 Subset Spin-Offs (Velvet Cadence, Sovereign Brief, GlowGrid Studio).",
+  "scripts": {
+    "test": "node --test",
+    "start": "node server.js"
+  }
+}
