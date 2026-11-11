@@ -401,7 +401,8 @@ function renderInvoice() {
   const planId = (document.getElementById('invPlan') && document.getElementById('invPlan').value) || 'velvet_pro';
   const buyerName = (document.getElementById('invBuyer') && document.getElementById('invBuyer').value) || 'Sarah Jenkins, Managing Director';
   const companyName = (document.getElementById('invCompany') && document.getElementById('invCompany').value) || 'Meridian Advisory Partners Pty Ltd';
-  const inv = AureliaEngine.generateCorporateInvoice({ planId, buyerName, companyName });
+  const session = AureliaEngine.createDualCheckoutSession({ planId, buyerName, companyName, provider: 'stripe' });
+  const inv = session.invoice;
   lastInvoice = inv;
   const out = document.getElementById('invoiceOut');
   if (!out) return;
@@ -414,9 +415,38 @@ function renderInvoice() {
     `<div style="font-size:13px;color:#475569;margin-bottom:8px"><b>Recommended Corporate GL Category:</b> <code>${inv.glCategory}</code></div>` +
     `<div style="font-size:15px;background:#fff;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:10px">` +
     `Ex-GST: <b>$${inv.exGstAmount.toFixed(2)}</b> &nbsp;|&nbsp; GST (10%): <b>$${inv.gstAmount.toFixed(2)}</b> &nbsp;|&nbsp; Total Paid/Due: <b style="color:#15803d">$${inv.totalIncGst.toFixed(2)} AUD</b></div>` +
+    `<div style="font-size:13px;background:#f8fafc;padding:8px 10px;border:1px dashed #94a3b8;border-radius:6px;margin-bottom:10px">` +
+    `<b>Direct B2B EFT / Remittance:</b> ${session.eftBankDetails.accountName} &middot; BSB <code>${session.eftBankDetails.bsb}</code> &middot; Acc <code>${session.eftBankDetails.accountNumber}</code> &middot; Ref: <code>${session.eftBankDetails.reference}</code></div>` +
+    `<div class="btn-row" style="margin-bottom:8px">` +
+    `<button class="gold sm" onclick="launchCheckout('stripe')">&#128179; Checkout via Stripe (Direct / Apple Pay / Corp Card)</button>` +
+    `<button class=" sm" style="background:#7c3aed;color:#fff" onclick="launchCheckout('lemonsqueezy')">&#127819; Checkout via Lemon Squeezy (Global MoR + Affiliate Split)</button>` +
+    `</div>` +
     `<div class="btn-row">` +
-    `<button class="gold sm" onclick="copyText(lastInvoice.approvalMemo, 'Finance Expense Approval Memo')">1-Click Copy Finance Approval Email</button>` +
+    `<button class="outline sm" onclick="copyText(lastInvoice.approvalMemo, 'Finance Expense Approval Memo')">1-Click Copy Finance Approval Email</button>` +
     `<button class="outline sm" onclick="printCorporateInvoice()">Print / Save PDF Tax Invoice</button></div></div>`;
+}
+
+async function launchCheckout(provider) {
+  const planId = (document.getElementById('invPlan') && document.getElementById('invPlan').value) || 'velvet_pro';
+  const buyerName = (document.getElementById('invBuyer') && document.getElementById('invBuyer').value) || 'Sarah Jenkins, Managing Director';
+  const companyName = (document.getElementById('invCompany') && document.getElementById('invCompany').value) || 'Meridian Advisory Partners Pty Ltd';
+  const params = new URLSearchParams(window.location.search);
+  const affiliateRef = params.get('ref') || '';
+  let session = AureliaEngine.createDualCheckoutSession({ planId, buyerName, companyName, provider, affiliateRef });
+  try {
+    const res = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ planId, buyerName, companyName, provider, affiliateRef }),
+    });
+    if (res.ok) session = await res.json();
+  } catch (_) {}
+  const targetUrl = provider === 'lemonsqueezy' ? session.lemonSqueezyCheckoutUrl : session.stripeCheckoutUrl;
+  copyText(targetUrl, (provider === 'lemonsqueezy' ? 'Lemon Squeezy MoR' : 'Stripe') + ' Checkout Link');
+  showToast((provider === 'lemonsqueezy' ? 'Lemon Squeezy MoR' : 'Stripe') + ' Checkout Ready (' + session.invoice.invoiceNumber + ') — link copied & opening!');
+  if (session.liveStripeSessionId) {
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+  }
 }
 
 function printCorporateInvoice() {
@@ -461,6 +491,7 @@ window.closeHandoffModal = closeHandoffModal;
 window.installAppPrompt = installAppPrompt;
 window.toggleVoiceDictation = toggleVoiceDictation;
 window.renderInvoice = renderInvoice;
+window.launchCheckout = launchCheckout;
 window.printCorporateInvoice = printCorporateInvoice;
 window.renderPartnerKit = renderPartnerKit;
 

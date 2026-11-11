@@ -8,6 +8,15 @@ const engine = require('./lib/engine');
 
 const PORT = process.env.PORT || 3002;
 const PUBLIC = path.join(__dirname, 'public');
+const ENV_PATH = path.join(__dirname, '.env');
+if (fs.existsSync(ENV_PATH)) {
+  fs.readFileSync(ENV_PATH, 'utf8').split(/\r?\n/).forEach((line) => {
+    const m = line.match(/^\s*([A-Za-z0-9_]+)\s*=\s*(.*)\s*$/);
+    if (m && !process.env[m[1]]) {
+      process.env[m[1]] = m[2].replace(/^['"]|['"]$/g, '');
+    }
+  });
+}
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -92,6 +101,48 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && u.pathname === '/api/invoice') {
       const b = await readBody(req);
       return send(res, 200, engine.generateCorporateInvoice(b));
+    }
+    if (req.method === 'POST' && u.pathname === '/api/checkout') {
+      const b = await readBody(req);
+      const session = engine.createDualCheckoutSession(b);
+      const stripeKey = process.env.STRIPE_SECRET_KEY || '';
+      if (b.provider === 'stripe' && stripeKey.startsWith('sk_')) {
+        try {
+          const plan = engine.PRICING_PLANS[session.planId];
+          const isAnnual = plan.billingCycle.toLowerCase().includes('annual');
+          const form = new URLSearchParams({
+            mode: 'subscription',
+            success_url: (process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`) + `/?checkout=success&plan=${plan.id}&inv=${session.invoice.invoiceNumber}`,
+            cancel_url: (process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`) + `/?checkout=cancel`,
+            customer_email: b.buyerEmail || 's.jenkins@meridianadvisory.com.au',
+            client_reference_id: session.invoice.invoiceNumber,
+            'line_items[0][price_data][currency]': 'aud',
+            'line_items[0][price_data][unit_amount]': String(plan.amountAud * 100),
+            'line_items[0][price_data][recurring][interval]': isAnnual ? 'year' : 'month',
+            'line_items[0][price_data][product_data][name]': plan.product,
+            'line_items[0][price_data][product_data][description]': `${plan.features} (GL: ${plan.glCategory})`,
+            'line_items[0][quantity]': '1',
+            'metadata[invoice_number]': session.invoice.invoiceNumber,
+            'metadata[company_name]': b.companyName || '',
+            'metadata[gl_category]': plan.glCategory,
+            'metadata[affiliate_ref]': b.affiliateRef || '',
+          });
+          const r = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${stripeKey}`,
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: form.toString(),
+          });
+          const j = await r.json();
+          if (j && j.url) {
+            session.stripeCheckoutUrl = j.url;
+            session.liveStripeSessionId = j.id;
+          }
+        } catch (_) {}
+      }
+      return send(res, 200, session);
     }
     if (req.method === 'GET' && u.pathname === '/api/partner-kit') {
       const ch = u.searchParams.get('channel') || 'ghostwriters';

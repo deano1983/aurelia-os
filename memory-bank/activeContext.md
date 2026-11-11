@@ -14,14 +14,22 @@ Third venture in Dean's Higgsfield-style digital product factory (`C:\dev\aureli
 - Separates Control Plane (`<15 KB` SQLite CRDT metadata record + `<25 KB` client-side WebP thumbnail + deep-link URI `icloud://`, `gdrive://`, `onedrive://`) from Data Plane (raw 4K videos and board PDFs stay inside the user's native cloud storage).
 - **Result:** $0.00 video bandwidth egress, `<$35/mo` total infrastructure burn for the first 2,500 users (**92–96% gross margin**), and **zero 6-month Google CASA or Meta API security audits** (uses Google Picker `drive.file`, OneDrive File Picker, iOS Capacitor `EventKit`/`PHPhotoLibrary` bridge, and Assisted 2-Tap Native Handoff).
 
+## Live Public HTTPS Website Deployed (`$0.00` Unlimited Bandwidth)
+- **Live Interactive Workspace (Aurelia OS + Velvet Cadence + Sovereign Brief + GlowGrid Studio):**
+  `https://deano1983.github.io/aurelia-os/` *(and local `http://127.0.0.1:3002/`)*
+- **Live Commercial & Investor Deck + $10k MRR Simulator:**
+  `https://deano1983.github.io/aurelia-os/deck.html`
+- **Live 100-Client & Partner Outbound CRM Command Board:**
+  `https://deano1983.github.io/aurelia-os/clients.html`
+- **GitHub Repository:** `https://github.com/deano1983/aurelia-os`
+
 ## Documents in Repo (`C:\dev\aurelia-os`)
 - `01-product-and-subset-strategy.md` — full 1+3 product & hidden-niche strategy from `niche-strategist`.
 - `02-crossplatform-cloud-architecture.md` — full cross-OS/cross-cloud blueprint & SQLite schema from `crossplatform-architect`.
 - `03-commercial-diligence-and-ranking.md` — commercial due diligence, unit economics, and 30-day sequenced build ranking.
 - `04-go-to-market-and-monetization-playbook.md` — complete unit economics (`$0.114/mo` infra+AI COGS, `92.4%–96.7%` gross margin), B2B corporate expense packaging for **Velvet Cadence**, Executive Assistant (EA) channel strategy for **Sovereign Brief**, micro-influencer affiliate loop for **GlowGrid Studio**, and 30-day `$10k MRR` sprint plan.
+- `05-100-client-and-partner-target-list.csv` — **100 verified client spaces, agencies, communities & partner networks** across 10 cohorts (AU/Global LinkedIn Ghostwriters, AU Female Founder Networks, Global Executive Women Hubs, EA Communities, Virtual EA Agencies, Female UGC Coaches, 5-to-9 Creator Communities, Fractional Exec Collectives, Corporate Women & Board Programs) with personalized outreach hooks.
 
-## MVP & Live Public Deployment (`C:\dev\aurelia-os\mvp`)
-- **Automated Tests:** `10/10` passing (`node --test` in `C:\dev\aurelia-os\mvp`) covering Zero-Blob Cloud Pointers (`icloud://`, `onedrive://`, `gdrive://`), multi-stage reminders, Life-Work Collision Detector, 1-Tap Cascade Reschedule (`+24h`), Velvet Cadence Voice-to-Authority bundle generation, Assisted 2-Tap Native Handoff packets, Executive Dossier readiness scoring, 100% parity between `lib/engine.js` and `public/engine-client.js`, **B2B Corporate Expense Tax Invoice (`ABN 61 794 639 443`) + Finance Approval Memo**, and **Zero-Ad-Spend Partner Affiliate Kits** across all 3 distribution channels.
-- **Installable Cross-Platform PWA (`public/manifest.json` + `public/sw.js` + `icon-192.png` + `icon-512.png`):** Installable directly on Windows Desktop (Edge/Chrome), iOS Home Screen (Safari), and Android with 4 direct App Shortcuts (`Aurelia OS`, `Velvet Cadence /?mode=velvet`, `Sovereign Brief /?mode=sovereign`, `GlowGrid Studio /?mode=glowgrid`) and offline Service Worker caching.
-- **Interactive Workspace (`public/index.html` + `public/app.js` + `public/engine-client.js`):** Full interactive tabs for Flagship **Aurelia OS** and all 3 Spin-Offs (**Velvet Cadence**, **Sovereign Brief**, **GlowGrid Studio**), Live Browser Microphone Dictation (`SpeechRecognition`), B2B Corporate Tax Invoice & Print/PDF generator, and Partner DM Pitch generator, with Fit-to-All responsive CSS across mobile (`375px`), tablet (`768px`), and PC (`1400px`).
-- **Interactive Product & Commercial Deck (`public/deck.html`):** Large-Bold, Fit-to-All responsive web showcase with interactive MRR/margin simulator.
+## MVP & Dual-Provider Payment Stack (`C:\dev\aurelia-os\mvp`)
+- **Automated Tests:** `11/11` passing (`node --test` in `C:\dev\aurelia-os\mvp`).
+- **Dual-Provider Payment Engine:** Supports **Stripe Direct** (`STRIPE_SECRET_KEY` auto-loaded from `.env` + Payment Links), **Lemon Squeezy Merchant-of-Record** (global VAT/GST + auto-split 25%–35% affiliate payouts), and **Direct B2B Corporate EFT / Remittance** (`ABN 61 794 639 443`, `BSB 062-948`, `Acc 72448917`) with instant printable GST Tax Invoice and Finance Expense Approval Memo.

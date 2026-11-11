@@ -148,4 +148,26 @@ test('Zero-Ad-Spend Partner Affiliate Kit: returns ready-to-send DM pitches & re
   assert.ok(cc.dmPitch.includes('GlowGrid Studio'));
 });
 
+test('Dual-Provider Checkout Engine: generates Stripe Direct, Lemon Squeezy MoR (with affiliate ref), and B2B EFT sessions', () => {
+  const s1 = engine.createDualCheckoutSession({
+    planId: 'velvet_ea',
+    provider: 'stripe',
+    buyerName: 'Elena Vance',
+    companyName: 'Vance Executive Partners',
+    affiliateRef: 'partner_ghostwriters',
+  });
+  const s2 = engine.createDualCheckoutSession({
+    planId: 'sovereign_annual',
+    provider: 'lemonsqueezy',
+    buyerName: 'Elena Vance',
+    companyName: 'Vance Executive Partners',
+    affiliateRef: 'partner_ea_networks',
+  });
+  assert.equal(s1.amountAud, 149);
+  assert.ok(s1.stripeCheckoutUrl.includes('utm_source=partner_ghostwriters'));
+  assert.equal(s2.amountAud, 399);
+  assert.ok(s2.lemonSqueezyCheckoutUrl.includes('aff=partner_ea_networks'));
+  assert.equal(s1.eftBankDetails.bsb, '062-948');
+});
+
 

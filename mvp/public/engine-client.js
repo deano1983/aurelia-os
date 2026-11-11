@@ -390,6 +390,60 @@ function generatePartnerKit(channelId = 'ghostwriters') {
   return { ...ch };
 }
 
+function createDualCheckoutSession(input = {}) {
+  const planKey = PRICING_PLANS[input.planId] ? input.planId : 'velvet_pro';
+  const plan = PRICING_PLANS[planKey];
+  const provider = ['stripe', 'lemonsqueezy', 'b2b_eft'].includes(input.provider) ? input.provider : 'stripe';
+  const buyerEmail = String(input.buyerEmail || 's.jenkins@meridianadvisory.com.au').trim();
+  const companyName = String(input.companyName || 'Meridian Advisory Partners Pty Ltd').trim();
+  const affiliateRef = String(input.affiliateRef || '').trim();
+  const inv = generateCorporateInvoice({
+    planId: plan.id,
+    buyerName: input.buyerName,
+    companyName,
+    buyerEmail,
+  });
+
+  const stripeParams = new URLSearchParams({
+    client_reference_id: inv.invoiceNumber,
+    prefilled_email: buyerEmail,
+    'locale': 'en-AU',
+  });
+  if (affiliateRef) stripeParams.set('utm_source', affiliateRef);
+
+  const lsParams = new URLSearchParams({
+    'checkout[email]': buyerEmail,
+    'checkout[custom][invoice_number]': inv.invoiceNumber,
+    'checkout[custom][company_name]': companyName,
+    'checkout[custom][gl_category]': plan.glCategory,
+  });
+  if (affiliateRef) lsParams.set('aff', affiliateRef);
+
+  return {
+    provider,
+    planId: plan.id,
+    productName: plan.product,
+    amountAud: plan.amountAud,
+    currency: 'AUD',
+    billingCycle: plan.billingCycle,
+    invoice: inv,
+    stripeCheckoutUrl: `https://buy.stripe.com/aurelia_${plan.id}?${stripeParams.toString()}`,
+    lemonSqueezyCheckoutUrl: `https://aurelia-os.lemonsqueezy.com/checkout/buy/${plan.id}?${lsParams.toString()}`,
+    eftBankDetails: {
+      accountName: 'Aurelia Systems (ABN 61 794 639 443)',
+      bsb: '062-948',
+      accountNumber: '72448917',
+      reference: inv.invoiceNumber,
+      paymentTerms: 'Immediate activation upon remittance advice or PO sign-off',
+    },
+    affiliateSplitNote: provider === 'lemonsqueezy'
+      ? 'Lemon Squeezy MoR automatically calculates global VAT/GST/Sales Tax and auto-splits 25%–35% recurring affiliate payouts.'
+      : provider === 'stripe'
+        ? 'Stripe Direct (1.7% + A$0.30 AU cards, Apple Pay / Google Pay / Corporate Amex) + instant ABN 61 794 639 443 GST Tax Invoice.'
+        : 'Direct Corporate EFT / PayID Remittance (0% card processing fee, 100% upfront cashflow on Annual Charters).',
+  };
+}
+
 const AureliaEngine = {
   PROVIDERS,
   HANDOFF_TARGETS,
@@ -399,6 +453,7 @@ const AureliaEngine = {
   PARTNER_CHANNELS,
   generateCorporateInvoice,
   generatePartnerKit,
+  createDualCheckoutSession,
   createCloudPointer,
   buildReminders,
   createCommandItem,
