@@ -1,8 +1,14 @@
-const CACHE_NAME = 'aurelia-os-v1';
+const CACHE_NAME = 'aurelia-os-v2';
 const ASSETS = [
   '/',
   '/index.html',
+  '/workspace.html',
   '/deck.html',
+  '/clients.html',
+  '/clients-data.js',
+  '/outreach.html',
+  '/outreach-engine.js',
+  '/outreach-app.js',
   '/engine-client.js',
   '/app.js',
   '/manifest.json',
