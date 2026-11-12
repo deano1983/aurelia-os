@@ -1,6 +1,6 @@
 # Aurelia OS (Women's Executive & Creator Command Suite) — Active Context
 
-Last checked: 2026-11-11 Australia/Brisbane.
+Last checked: 2026-11-12 Australia/Brisbane.
 
 ## Project Overview
 Third venture in Dean's Higgsfield-style digital product factory (`C:\dev\aurelia-os`):
@@ -35,5 +35,13 @@ Third venture in Dean's Higgsfield-style digital product factory (`C:\dev\aureli
 - `05-100-client-and-partner-target-list.csv` — **100 verified client spaces, agencies, communities & partner networks** across 10 cohorts (AU/Global LinkedIn Ghostwriters, AU Female Founder Networks, Global Executive Women Hubs, EA Communities, Virtual EA Agencies, Female UGC Coaches, 5-to-9 Creator Communities, Fractional Exec Collectives, Corporate Women & Board Programs) with personalized outreach hooks.
 
 ## MVP & Dual-Provider Payment Stack (`C:\dev\aurelia-os\mvp`)
-- **Automated Tests:** `11/11` passing (`node --test` in `C:\dev\aurelia-os\mvp`).
+- **Automated Tests:** `27/27` passing (`node --test` in `C:\dev\aurelia-os\mvp`) — engine, outreach cadence, landing offer, site-wide link integrity, precache and manifest checks.
 - **Dual-Provider Payment Engine:** Supports **Stripe Direct** (`STRIPE_SECRET_KEY` auto-loaded from `.env` + Payment Links), **Lemon Squeezy Merchant-of-Record** (global VAT/GST + auto-split 25%–35% affiliate payouts), and **Direct B2B Corporate EFT / Remittance** (`ABN 61 794 639 443`, `BSB 062-948`, `Acc 72448917`) with instant printable GST Tax Invoice and Finance Expense Approval Memo.
+
+## Live E2E Verification (playwright-core + headless Chromium, 2026-11-12)
+- **Live public site: `48/49` checks passed.** All 5 pages (landing, workspace, deck, clients CRM, outreach console) functional on GitHub Pages: 100 CRM targets, Day-1 35/35 DM batch, mark-sent pipeline, message packs, $10,845 MRR simulator, collision→cascade lifecycle, IG Reels handoff modal, zero uncaught JS exceptions.
+- **Local (fully fixed build): `49/49` checks passed** including new **offline PWA check** — the service-worker precache boots the whole workspace with zero network.
+- **Static-deploy findings fixed in `mvp/public` (pending redeploy):**
+  1. `sw.js` v3: precache + offline fallback now resolve paths against the service worker's own scope (works at domain root *and* the `/aurelia-os/` GitHub Pages subpath; `register('./sw.js')` in `app.js`).
+  2. `app.js`: new `postApi()` helper — the workspace only calls the optional Node API after `/api/state` proves it exists, so static deploys emit no doomed POSTs (405) from the browser; client-engine fallbacks unchanged.
+  3. `deck.html` / `clients.html` / `outreach.html`: added `<link rel="icon" / rel="apple-touch-icon">` (removes `/favicon.ico` 404 console noise on direct page entry).

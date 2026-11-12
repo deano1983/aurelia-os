@@ -92,6 +92,22 @@ async function fetchState() {
   return computeClientPayload(localState);
 }
 
+// Server-sync helper: the workspace runs solo (client engine) on static HTTPS
+// deploys — only talk to the optional Node API once /api/state proved it exists,
+// so GitHub Pages never sees doomed POSTs (405) fired from the browser.
+async function postApi(path, body) {
+  if (!serverOnline) return null;
+  try {
+    const res = await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (res.ok) return await res.json();
+  } catch (_) {}
+  return null;
+}
+
 function setMode(m, btn) {
   mode = m;
   document.querySelectorAll('.tab').forEach((b) => b.classList.remove('active'));
@@ -183,18 +199,13 @@ async function render() {
   if (!lastVoiceBundle) runVoice();
 }
 async function cascade() {
-  try {
-    const res = await fetch('/api/cascade', { method: 'POST' });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && Array.isArray(data.items)) {
-        localState.items = data.items;
-        showToast('Cascaded flexible creator uploads +24h — Hard deadlines protected!');
-        await render();
-        return;
-      }
-    }
-  } catch (_) {}
+  const data = await postApi('/api/cascade');
+  if (data && Array.isArray(data.items)) {
+    localState.items = data.items;
+    showToast('Cascaded flexible creator uploads +24h — Hard deadlines protected!');
+    await render();
+    return;
+  }
   const r = AureliaEngine.cascadeReschedule(localState.items, 24);
   localState.items = r.items;
   showToast(`Cascaded ${r.shiftedCount} flexible item(s) +24h!`);
@@ -202,18 +213,13 @@ async function cascade() {
 }
 
 async function resetDemo() {
-  try {
-    const res = await fetch('/api/reset', { method: 'POST' });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && Array.isArray(data.items)) {
-        localState = { assets: data.assets, items: data.items };
-        showToast('Demo state reset!');
-        await render();
-        return;
-      }
-    }
-  } catch (_) {}
+  const data = await postApi('/api/reset');
+  if (data && Array.isArray(data.items)) {
+    localState = { assets: data.assets, items: data.items };
+    showToast('Demo state reset!');
+    await render();
+    return;
+  }
   localState = AureliaEngine.getInitialDemoState();
   showToast('Demo state reset!');
   await render();
@@ -232,21 +238,14 @@ async function addAssetPointer() {
     rawSizeMb: Number(sizeEl && sizeEl.value) || 250,
   };
 
-  try {
-    const res = await fetch('/api/assets', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && Array.isArray(data.assets)) localState.assets = data.assets;
-      else if (data && data.id) localState.assets.unshift(data);
-      showToast(`Indexed ${payload.rawSizeMb} MB cloud asset with 12 KB pointer ($0.00 egress)!`);
-      await render();
-      return;
-    }
-  } catch (_) {}
+  const data = await postApi('/api/assets', payload);
+  if (data) {
+    if (Array.isArray(data.assets)) localState.assets = data.assets;
+    else if (data.id) localState.assets.unshift(data);
+    showToast(`Indexed ${payload.rawSizeMb} MB cloud asset with 12 KB pointer ($0.00 egress)!`);
+    await render();
+    return;
+  }
 
   const pointer = AureliaEngine.createCloudPointer(payload);
   localState.assets.unshift(pointer);
@@ -258,15 +257,7 @@ async function runVoice() {
   const select = document.getElementById('proofAssetSelect');
   const proofAsset = (select && select.value) || 'Q3 Board Financial Pack.xlsx (Windows / ONEDRIVE)';
 
-  let bundle = null;
-  try {
-    const res = await fetch('/api/voice', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ transcript, proofAsset }),
-    });
-    if (res.ok) bundle = await res.json();
-  } catch (_) {}
+  let bundle = await postApi('/api/voice', { transcript, proofAsset });
 
   if (!bundle || !bundle.linkedinPost) {
     bundle = AureliaEngine.voiceToAuthority(transcript, proofAsset);
@@ -310,7 +301,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
   });
 }
 
@@ -433,14 +424,8 @@ async function launchCheckout(provider) {
   const params = new URLSearchParams(window.location.search);
   const affiliateRef = params.get('ref') || '';
   let session = AureliaEngine.createDualCheckoutSession({ planId, buyerName, companyName, provider, affiliateRef });
-  try {
-    const res = await fetch('/api/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ planId, buyerName, companyName, provider, affiliateRef }),
-    });
-    if (res.ok) session = await res.json();
-  } catch (_) {}
+  const serverSession = await postApi('/api/checkout', { planId, buyerName, companyName, provider, affiliateRef });
+  if (serverSession && serverSession.invoice) session = serverSession;
   const targetUrl = provider === 'lemonsqueezy' ? session.lemonSqueezyCheckoutUrl : session.stripeCheckoutUrl;
   copyText(targetUrl, (provider === 'lemonsqueezy' ? 'Lemon Squeezy MoR' : 'Stripe') + ' Checkout Link');
   showToast((provider === 'lemonsqueezy' ? 'Lemon Squeezy MoR' : 'Stripe') + ' Checkout Ready (' + session.invoice.invoiceNumber + ') — link copied & opening!');
