@@ -1,4 +1,9 @@
-const CACHE_NAME = 'aurelia-os-v2';
+const CACHE_NAME = 'aurelia-os-v3';
+// Paths are declared site-relative ("/workspace.html") and resolved against this
+// service worker's own scope, so the same file works at a domain root (local
+// Node server) and under a sub-path deploy (e.g. GitHub Pages project sites).
+const SCOPE = new URL(self.registration.scope);
+const resolveScope = (p) => new URL(p.replace(/^\//, '') || './', SCOPE).href;
 const ASSETS = [
   '/',
   '/index.html',
@@ -18,7 +23,10 @@ const ASSETS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(ASSETS.map(resolveScope)))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -39,6 +47,10 @@ self.addEventListener('fetch', (event) => {
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
         return res;
       })
-      .catch(() => caches.match(event.request).then((cached) => cached || caches.match('/index.html')))
+      .catch(() =>
+        caches
+          .match(event.request)
+          .then((cached) => cached || caches.match(resolveScope('/index.html')))
+      )
   );
 });
