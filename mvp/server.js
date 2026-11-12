@@ -112,8 +112,8 @@ const server = http.createServer(async (req, res) => {
           const isAnnual = plan.billingCycle.toLowerCase().includes('annual');
           const form = new URLSearchParams({
             mode: 'subscription',
-            success_url: (process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`) + `/?checkout=success&plan=${plan.id}&inv=${session.invoice.invoiceNumber}`,
-            cancel_url: (process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`) + `/?checkout=cancel`,
+            success_url: (process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`) + `/workspace.html?checkout=success&plan=${plan.id}&inv=${session.invoice.invoiceNumber}`,
+            cancel_url: (process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`) + `/workspace.html?checkout=cancel`,
             customer_email: b.buyerEmail || 's.jenkins@meridianadvisory.com.au',
             client_reference_id: session.invoice.invoiceNumber,
             'line_items[0][price_data][currency]': 'aud',

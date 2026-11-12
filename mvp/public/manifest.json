@@ -2,7 +2,7 @@
   "name": "Aurelia OS — Executive & Creator Command Suite",
   "short_name": "Aurelia OS",
   "description": "Cross-Cloud (iCloud, OneDrive, Google Drive) & Cross-OS (iOS, Windows, Android) Executive & Creator Suite + Velvet Cadence, Sovereign Brief & GlowGrid Studio.",
-  "start_url": "/",
+  "start_url": "./workspace.html",
   "display": "standalone",
   "background_color": "#1e1b2e",
   "theme_color": "#1e1b2e",
@@ -26,21 +26,21 @@
       "name": "Velvet Cadence (LinkedIn Studio)",
       "short_name": "Velvet Cadence",
       "description": "90-Sec Voice-to-Authority & Cloud Proof Studio",
-      "url": "/?mode=velvet",
+      "url": "./workspace.html?mode=velvet",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Sovereign Brief (Exec Dossier)",
       "short_name": "Sovereign Brief",
       "description": "Cross-Cloud Executive Report & Boundary Radar",
-      "url": "/?mode=sovereign",
+      "url": "./workspace.html?mode=sovereign",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "GlowGrid Studio (Creator Radar)",
       "short_name": "GlowGrid",
       "description": "iCloud-to-Windows 4K Drop & Upload Consistency Radar",
-      "url": "/?mode=glowgrid",
+      "url": "./workspace.html?mode=glowgrid",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]

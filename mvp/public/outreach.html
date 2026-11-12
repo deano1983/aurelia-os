@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1e1b2e">
+<title>Aurelia OS — Day 1–30 Outreach Execution Console (100 Targets)</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif;background:#faf8f5;color:#18181b;font-size:clamp(15px,1.8vw,17px);font-weight:700;line-height:1.5}
+.top{background:linear-gradient(135deg,#1e1b2e 0%,#2a2440 100%);color:#fff;padding:clamp(14px,2.5vw,20px) clamp(12px,3vw,28px);border-bottom:4px solid #d4af37;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.top h1{font-size:clamp(18px,2.7vw,25px);font-weight:900;margin:0;color:#fff}
+.sub{color:#fde68a;font-size:clamp(12px,1.6vw,14px);font-weight:700;margin-top:3px}
+.nav{display:flex;gap:8px;flex-wrap:wrap}
+.nav a{background:#d4af37;color:#1e1b2e;text-decoration:none;padding:9px 13px;border-radius:8px;font-weight:900;border:2px solid #fde68a;font-size:13px;white-space:nowrap}
+.nav a.ghost{background:#312e48;color:#fff;border-color:#d4af37}
+.wrap{max-width:1400px;width:100%;margin:clamp(12px,2.5vw,22px) auto;padding:0 clamp(10px,2.5vw,22px) 40px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border:2px solid #d6d3d1;border-top:4px solid #d4af37;border-radius:10px;padding:10px 12px}
+.kpi .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#475569}
+.kpi .val{font-size:clamp(17px,2.2vw,22px);font-weight:900;color:#1e1b2e;margin-top:2px}
+.kpi .hint{font-size:11px;color:#64748b;font-weight:700}
+.panel{background:#fff;border:2px solid #d6d3d1;border-radius:12px;padding:clamp(12px,2.2vw,18px);margin-bottom:14px}
+.panel h2{font-size:clamp(16px,2.1vw,19px);font-weight:900;margin:0 0 10px;color:#1e1b2e;border-bottom:3px solid #d4af37;padding-bottom:7px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px;align-items:end}
+label{display:block;font-size:12px;color:#475569;margin-bottom:4px}
+input,select{width:100%;padding:9px;border:2px solid #94a3b8;border-radius:8px;font-size:14px;font-weight:700;background:#fff;color:#18181b}
+button{background:#1e1b2e;color:#fde68a;border:2px solid #d4af37;padding:9px 12px;border-radius:8px;font-weight:900;cursor:pointer;font-size:13px}
+button.gold{background:#d4af37;color:#1e1b2e;border-color:#92400e}
+button.outline{background:#fff;color:#1e1b2e;border-color:#1e1b2e}
+button.sm{padding:6px 9px;font-size:12px;border-width:1.5px}
+button:hover{filter:brightness(1.06)}
+.batch{background:#1e1b2e;color:#f8fafc;border-left:6px solid #d4af37;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.bar{flex:1 1 260px;height:12px;background:#312e48;border-radius:6px;overflow:hidden;border:1px solid #d4af37}
+.bar > i{display:block;height:100%;background:linear-gradient(90deg,#d4af37,#fde68a);width:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,430px),1fr));gap:12px}
+.card{background:#fff;border:2px solid #cbd5e1;border-top:4px solid #d4af37;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;word-break:break-word}
+.card.done{border-top-color:#15803d;background:#f6fdf8}
+.card.paid{border-top-color:#0369a1;background:#f3fbff}
+.badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:900;background:#fef3c7;color:#92400e;margin:0 5px 4px 0}
+.badge.mode{background:#e2e8f0;color:#1e293b}
+.badge.day{background:#dcfce7;color:#166534}
+.badge.status{background:#ede9fe;color:#5b21b6}
+.org{font-size:16px;font-weight:900;color:#1e1b2e;line-height:1.3}
+.meta{font-size:12px;color:#475569}
+.fit{font-size:13px;color:#334155}
+details{background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:8px}
+details summary{cursor:pointer;font-size:13px;font-weight:900;color:#1e1b2e}
+.msg{border-top:1px dashed #cbd5e1;padding-top:8px;margin-top:8px}
+.msg-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.msg-title{font-size:12px;font-weight:900;color:#1e1b2e}
+.msg-body{white-space:pre-wrap;font-size:12.5px;font-weight:700;color:#1f2937;background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:8px;max-height:230px;overflow:auto}
+.count{font-size:11px;color:#64748b;font-weight:900}
+.count.over{color:#b91c1c}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.controls .row{grid-column:1/-1;justify-content:flex-start;padding-top:2px}
+select.status-select{width:auto;min-width:140px;flex:1 1 140px;padding:7px}
+.row .badge{flex:0 0 auto}
+.row > *{max-width:100%}
+.toast{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:22px;background:#1e1b2e;color:#fde68a;border:2px solid #d4af37;padding:10px 16px;border-radius:9px;font-weight:900;z-index:99;max-width:90vw;text-align:center}
+.footnote{font-size:12px;color:#64748b;margin-top:10px}
+@media print{.nav,.controls,button,.batch{display:none!important}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div>
+    <h1>AURELIA OS — DAY 1–30 OUTREACH EXECUTION CONSOLE</h1>
+    <div class="sub">100 verified targets &bull; 35-DM/day sprint &bull; personalised DM, 300-char note, 45-sec voice script, Day-3 &amp; Day-7 follow-ups, email</div>
+  </div>
+  <div class="nav">
+    <a href="./index.html">Home</a>
+    <a href="./workspace.html">Workspace</a>
+    <a href="./deck.html">Deck</a>
+    <a href="./clients.html">CRM Board</a>
+    <a class="ghost" href="./workspace.html#b2bPanel">Pricing</a>
+  </div>
+</div>
+<div class="wrap">
+  <div class="kpis" id="kpis"></div>
+
+  <div class="panel">
+    <h2><span>Sprint Controls</span><span class="badge">Weekly quota from the $10k MRR plan</span></h2>
+    <div class="controls">
+      <div>
+        <label for="day">Sprint day</label>
+        <select id="day" onchange="render()"></select>
+      </div>
+      <div>
+        <label for="quota">Daily DM quota</label>
+        <input id="quota" type="number" min="1" max="200" value="35" onchange="onQuotaChange()">
+      </div>
+      <div>
+        <label for="prod">Product door</label>
+        <select id="prod" onchange="render()">
+          <option value="">All products</option>
+          <option value="velvet">Velvet Cadence (wave 1)</option>
+          <option value="sovereign">Sovereign Brief (wave 2)</option>
+          <option value="glowgrid">GlowGrid Studio (wave 3)</option>
+          <option value="aurelia">Aurelia OS suite (wave 4)</option>
+        </select>
+      </div>
+      <div>
+        <label for="status">Pipeline stage</label>
+        <select id="status" onchange="render()"></select>
+      </div>
+      <div>
+        <label for="q">Search</label>
+        <input id="q" type="text" placeholder="Chief, Klowt, Brisbane, UGC…" oninput="render()">
+      </div>
+      <div class="row">
+        <button class="gold" onclick="copyBatchSummary()">Copy batch summary</button>
+        <button class="outline" onclick="exportCsv()">Export CSV</button>
+        <button class="outline" onclick="resetPipeline()">Reset</button>
+      </div>
+    </div>
+    <div class="footnote">Progress is stored in this browser only (localStorage) — nothing is uploaded. Copy a message, send it from your own LinkedIn or inbox, then move the card forward.</div>
+  </div>
+
+  <div class="batch">
+    <div id="batchLabel">Day 1 batch</div>
+    <div class="bar"><i id="batchBar"></i></div>
+    <div id="batchCount">0 / 35 sent</div>
+  </div>
+
+  <div id="list" class="grid"></div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="./clients-data.js"></script>
+<script src="./outreach-engine.js"></script>
+<script src="./outreach-app.js"></script>
+</body>
+</html>
+

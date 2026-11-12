@@ -15,12 +15,16 @@ Third venture in Dean's Higgsfield-style digital product factory (`C:\dev\aureli
 - **Result:** $0.00 video bandwidth egress, `<$35/mo` total infrastructure burn for the first 2,500 users (**92–96% gross margin**), and **zero 6-month Google CASA or Meta API security audits** (uses Google Picker `drive.file`, OneDrive File Picker, iOS Capacitor `EventKit`/`PHPhotoLibrary` bridge, and Assisted 2-Tap Native Handoff).
 
 ## Live Public HTTPS Website Deployed (`$0.00` Unlimited Bandwidth)
+- **Public marketing landing page (site root, conversion front door):**
+  `https://deano1983.github.io/aurelia-os/` *(local `http://127.0.0.1:3002/`, file `mvp/public/index.html`)*
 - **Live Interactive Workspace (Aurelia OS + Velvet Cadence + Sovereign Brief + GlowGrid Studio):**
-  `https://deano1983.github.io/aurelia-os/` *(and local `http://127.0.0.1:3002/`)*
+  `https://deano1983.github.io/aurelia-os/workspace.html` *(moved from `/` so the marketing page can own the root; deep links `?mode=velvet|sovereign|glowgrid|all` still work)*
 - **Live Commercial & Investor Deck + $10k MRR Simulator:**
   `https://deano1983.github.io/aurelia-os/deck.html`
 - **Live 100-Client & Partner Outbound CRM Command Board:**
   `https://deano1983.github.io/aurelia-os/clients.html`
+- **Live Day 1–30 Outreach Execution Console:**
+  `https://deano1983.github.io/aurelia-os/outreach.html`
 - **GitHub Repository:** `https://github.com/deano1983/aurelia-os`
 
 ## Documents in Repo (`C:\dev\aurelia-os`)
