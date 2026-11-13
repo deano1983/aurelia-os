@@ -427,6 +427,13 @@ async function launchCheckout(provider) {
   const serverSession = await postApi('/api/checkout', { planId, buyerName, companyName, provider, affiliateRef });
   if (serverSession && serverSession.invoice) session = serverSession;
   const targetUrl = provider === 'lemonsqueezy' ? session.lemonSqueezyCheckoutUrl : session.stripeCheckoutUrl;
+  // Plans with a real Stripe Payment Link go straight to the hosted checkout.
+  if (provider === 'stripe' && session.stripeLive && !session.liveStripeSessionId) {
+    showToast('Opening secure Stripe checkout — ' + session.productName + ' ($' + session.amountAud + ' AUD/mo)');
+    const win = window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    if (!win) window.location.href = targetUrl;
+    return;
+  }
   copyText(targetUrl, (provider === 'lemonsqueezy' ? 'Lemon Squeezy MoR' : 'Stripe') + ' Checkout Link');
   showToast((provider === 'lemonsqueezy' ? 'Lemon Squeezy MoR' : 'Stripe') + ' Checkout Ready (' + session.invoice.invoiceNumber + ') — link copied & opening!');
   if (session.liveStripeSessionId) {

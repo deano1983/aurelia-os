@@ -276,6 +276,16 @@ function getInitialDemoState() {
 }
 
 const PRICING_PLANS = {
+  velvet_solo: {
+    id: 'velvet_solo',
+    product: 'Velvet Cadence — Solo',
+    mode: 'velvet',
+    amountAud: 49,
+    billingCycle: 'Monthly (B2B Corporate Expensable)',
+    glCategory: 'Professional Development / Executive Communications & PR Software',
+    features: 'Voice-to-Authority Studio + Cloud Proof Picker + 4-Slide Carousel Briefs',
+    stripePaymentLink: 'https://buy.stripe.com/cNicN43Xq0W41dE1dp8Ra02',
+  },
   velvet_pro: {
     id: 'velvet_pro',
     product: 'Velvet Cadence — Executive Authority Pro',
@@ -284,6 +294,7 @@ const PRICING_PLANS = {
     billingCycle: 'Monthly (B2B Corporate Expensable)',
     glCategory: 'Professional Development / Executive Communications & PR Software',
     features: '90-Sec Voice-to-Authority Studio + Tri-Cloud Proof Vault (OneDrive/GDrive/iCloud) + 4-Slide Carousel Briefs',
+    stripePaymentLink: 'https://buy.stripe.com/28E6oG65ybAI2hIbS38Ra00',
   },
   velvet_ea: {
     id: 'velvet_ea',
@@ -293,6 +304,7 @@ const PRICING_PLANS = {
     billingCycle: 'Monthly (B2B Corporate Expensable)',
     glCategory: 'Professional Development / Executive Communications & PR Software',
     features: 'Delegated EA Proof Attachment Queue + 1-Tap Executive Mobile Sign-Off + Ghostwriter Workspace',
+    stripePaymentLink: 'https://buy.stripe.com/fZuaEW1PicEM5tU4pB8Ra01',
   },
   sovereign_annual: {
     id: 'sovereign_annual',
@@ -406,9 +418,11 @@ function createDualCheckoutSession(input = {}) {
 
   const stripeParams = new URLSearchParams({
     client_reference_id: inv.invoiceNumber,
-    prefilled_email: buyerEmail,
     'locale': 'en-AU',
   });
+  // Only prefill the checkout email when the caller supplied a real one — the
+  // invoice preview falls back to a demo address that must never reach Stripe.
+  if (input.buyerEmail) stripeParams.set('prefilled_email', buyerEmail);
   if (affiliateRef) stripeParams.set('utm_source', affiliateRef);
 
   const lsParams = new URLSearchParams({
@@ -427,7 +441,10 @@ function createDualCheckoutSession(input = {}) {
     currency: 'AUD',
     billingCycle: plan.billingCycle,
     invoice: inv,
-    stripeCheckoutUrl: `https://buy.stripe.com/aurelia_${plan.id}?${stripeParams.toString()}`,
+    stripeCheckoutUrl: plan.stripePaymentLink
+      ? `${plan.stripePaymentLink}?${stripeParams.toString()}`
+      : `https://buy.stripe.com/aurelia_${plan.id}?${stripeParams.toString()}`,
+    stripeLive: Boolean(plan.stripePaymentLink),
     lemonSqueezyCheckoutUrl: `https://aurelia-os.lemonsqueezy.com/checkout/buy/${plan.id}?${lsParams.toString()}`,
     eftBankDetails: {
       accountName: 'Aurelia Systems (ABN 61 794 639 443)',
