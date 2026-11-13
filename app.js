@@ -410,7 +410,6 @@ function renderInvoice() {
     `<b>Direct B2B EFT / Remittance:</b> ${session.eftBankDetails.accountName} &middot; BSB <code>${session.eftBankDetails.bsb}</code> &middot; Acc <code>${session.eftBankDetails.accountNumber}</code> &middot; Ref: <code>${session.eftBankDetails.reference}</code></div>` +
     `<div class="btn-row" style="margin-bottom:8px">` +
     `<button class="gold sm" onclick="launchCheckout('stripe')">&#128179; Checkout via Stripe (Direct / Apple Pay / Corp Card)</button>` +
-    `<button class=" sm" style="background:#7c3aed;color:#fff" onclick="launchCheckout('lemonsqueezy')">&#127819; Checkout via Lemon Squeezy (Global MoR + Affiliate Split)</button>` +
     `</div>` +
     `<div class="btn-row">` +
     `<button class="outline sm" onclick="copyText(lastInvoice.approvalMemo, 'Finance Expense Approval Memo')">1-Click Copy Finance Approval Email</button>` +
@@ -426,7 +425,7 @@ async function launchCheckout(provider) {
   let session = AureliaEngine.createDualCheckoutSession({ planId, buyerName, companyName, provider, affiliateRef });
   const serverSession = await postApi('/api/checkout', { planId, buyerName, companyName, provider, affiliateRef });
   if (serverSession && serverSession.invoice) session = serverSession;
-  const targetUrl = provider === 'lemonsqueezy' ? session.lemonSqueezyCheckoutUrl : session.stripeCheckoutUrl;
+  const targetUrl = session.stripeCheckoutUrl;
   // Plans with a real Stripe Payment Link go straight to the hosted checkout.
   if (provider === 'stripe' && session.stripeLive && !session.liveStripeSessionId) {
     showToast('Opening secure Stripe checkout — ' + session.productName + ' ($' + session.amountAud + ' AUD/mo)');
@@ -434,8 +433,8 @@ async function launchCheckout(provider) {
     if (!win) window.location.href = targetUrl;
     return;
   }
-  copyText(targetUrl, (provider === 'lemonsqueezy' ? 'Lemon Squeezy MoR' : 'Stripe') + ' Checkout Link');
-  showToast((provider === 'lemonsqueezy' ? 'Lemon Squeezy MoR' : 'Stripe') + ' Checkout Ready (' + session.invoice.invoiceNumber + ') — link copied & opening!');
+  copyText(targetUrl, 'Stripe Checkout Link');
+  showToast('Stripe Checkout Ready (' + session.invoice.invoiceNumber + ') — link copied & opening!');
   if (session.liveStripeSessionId) {
     window.open(targetUrl, '_blank', 'noopener,noreferrer');
   }

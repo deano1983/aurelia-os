@@ -328,7 +328,8 @@ const PRICING_PLANS = {
     id: 'aurelia_suite',
     product: 'Aurelia OS — All-Access Sovereign Suite (1+3 Bundle)',
     mode: 'all',
-    amountAud: 149,
+    amountAud: 79,
+    stripePaymentLink: 'https://buy.stripe.com/dRm00leobcnbgLi8Jl8g002',
     billingCycle: 'Monthly All-Access Suite (B2B Corporate Expensable)',
     glCategory: 'Executive Operations, Cloud Workflow & Communications Suite',
     features: 'Full Aurelia OS Hub + Velvet Cadence + Sovereign Brief + GlowGrid Studio (Unlimited Cloud Pointers)',
@@ -445,7 +446,6 @@ function createDualCheckoutSession(input = {}) {
       ? `${plan.stripePaymentLink}?${stripeParams.toString()}`
       : `https://buy.stripe.com/aurelia_${plan.id}?${stripeParams.toString()}`,
     stripeLive: Boolean(plan.stripePaymentLink),
-    lemonSqueezyCheckoutUrl: `https://aurelia-os.lemonsqueezy.com/checkout/buy/${plan.id}?${lsParams.toString()}`,
     eftBankDetails: {
       accountName: 'Aurelia Systems (ABN 61 794 639 443)',
       bsb: '062-948',
