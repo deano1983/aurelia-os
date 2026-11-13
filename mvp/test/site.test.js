@@ -87,3 +87,25 @@ test('Web app manifest installs the workspace, not the marketing page', () => {
     assert.ok(exists(target), `shortcut target ${shortcut.url} does not exist`);
   }
 });
+
+test('Velvet Cadence is purchasable: all three tiers carry a real Stripe Payment Link', () => {
+  const engine = require('../lib/engine');
+  const html = read('index.html');
+  const tiers = { velvet_solo: 49, velvet_pro: 99, velvet_ea: 149 };
+  const seen = new Set();
+  for (const [planId, amount] of Object.entries(tiers)) {
+    const plan = engine.PRICING_PLANS[planId];
+    assert.equal(plan.amountAud, amount);
+    assert.match(plan.stripePaymentLink, /^https:\/\/buy\.stripe\.com\/[A-Za-z0-9]{16,}$/, `${planId} needs a real payment link`);
+    assert.ok(!seen.has(plan.stripePaymentLink), 'each tier must have its own link');
+    seen.add(plan.stripePaymentLink);
+    assert.ok(html.includes(`href="${plan.stripePaymentLink}"`), `landing page must link the ${planId} checkout`);
+    const session = engine.createDualCheckoutSession({ planId, provider: 'stripe', affiliateRef: 'partner_x' });
+    assert.equal(session.stripeLive, true);
+    assert.ok(session.stripeCheckoutUrl.startsWith(plan.stripePaymentLink + '?'));
+    assert.ok(session.stripeCheckoutUrl.includes('utm_source=partner_x'));
+    assert.ok(!session.stripeCheckoutUrl.includes('prefilled_email'), 'the demo buyer email must never be prefilled into a real checkout');
+  }
+  // plans without a payment link must not be reported as purchasable
+  assert.equal(engine.createDualCheckoutSession({ planId: 'glowgrid_pro', provider: 'stripe' }).stripeLive, false);
+});
