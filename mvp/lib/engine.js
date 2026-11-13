@@ -284,7 +284,7 @@ const PRICING_PLANS = {
     billingCycle: 'Monthly (B2B Corporate Expensable)',
     glCategory: 'Professional Development / Executive Communications & PR Software',
     features: 'Voice-to-Authority Studio + Cloud Proof Picker + 4-Slide Carousel Briefs',
-    stripePaymentLink: 'https://buy.stripe.com/8x2eVfcg3bj7eDae3F8g003',
+    stripePaymentLink: 'https://buy.stripe.com/cNicN43Xq0W41dE1dp8Ra02',
   },
   velvet_pro: {
     id: 'velvet_pro',
@@ -294,7 +294,7 @@ const PRICING_PLANS = {
     billingCycle: 'Monthly (B2B Corporate Expensable)',
     glCategory: 'Professional Development / Executive Communications & PR Software',
     features: '90-Sec Voice-to-Authority Studio + Tri-Cloud Proof Vault (OneDrive/GDrive/iCloud) + 4-Slide Carousel Briefs',
-    stripePaymentLink: 'https://buy.stripe.com/9B614p7ZN3QFgLie3F8g004',
+    stripePaymentLink: 'https://buy.stripe.com/28E6oG65ybAI2hIbS38Ra00',
   },
   velvet_ea: {
     id: 'velvet_ea',
@@ -304,7 +304,7 @@ const PRICING_PLANS = {
     billingCycle: 'Monthly (B2B Corporate Expensable)',
     glCategory: 'Professional Development / Executive Communications & PR Software',
     features: 'Delegated EA Proof Attachment Queue + 1-Tap Executive Mobile Sign-Off + Ghostwriter Workspace',
-    stripePaymentLink: 'https://buy.stripe.com/bJe00leob86VfHecZB8g005',
+    stripePaymentLink: 'https://buy.stripe.com/fZuaEW1PicEM5tU4pB8Ra01',
   },
   sovereign_annual: {
     id: 'sovereign_annual',
