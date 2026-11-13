@@ -166,7 +166,8 @@ test('Dual-Provider Checkout Engine: generates Stripe Direct, Lemon Squeezy MoR 
   assert.equal(s1.amountAud, 149);
   assert.ok(s1.stripeCheckoutUrl.includes('utm_source=partner_ghostwriters'));
   assert.equal(s2.amountAud, 399);
-  assert.ok(s2.lemonSqueezyCheckoutUrl.includes('aff=partner_ea_networks'));
+  assert.equal(s2.provider, 'lemonsqueezy');
+  assert.equal(typeof s2.lemonSqueezyCheckoutUrl, 'undefined');
   assert.equal(s1.eftBankDetails.bsb, '062-948');
 });
 
