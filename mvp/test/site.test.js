@@ -109,3 +109,18 @@ test('Velvet Cadence is purchasable: all three tiers carry a real Stripe Payment
   // plans without a payment link must not be reported as purchasable
   assert.equal(engine.createDualCheckoutSession({ planId: 'glowgrid_pro', provider: 'stripe' }).stripeLive, false);
 });
+
+test('Compliance & security: public code hides raw bank numbers and links live legal policies', () => {
+  const engine = require('../lib/engine');
+  const session = engine.createDualCheckoutSession({ planId: 'velvet_pro', provider: 'stripe' });
+  assert.ok(!/\d{3}-\d{3}|\d{8,}/.test(session.eftBankDetails.bsb + ' ' + session.eftBankDetails.accountNumber), 'raw BSB/account numbers must not be exposed in client JS');
+  const indexHtml = read('index.html');
+  for (const page of ['privacy.html', 'terms.html', 'refunds.html']) {
+    assert.ok(exists(page), `${page} must exist`);
+    assert.ok(indexHtml.includes(`./${page}`), `index.html must link to ${page}`);
+    assert.match(read(page), /ABN 61 794 639 443/);
+  }
+  const appJs = read('app.js');
+  assert.ok(appJs.includes('clearAllUserData'), 'workspace must expose Clear All Data');
+  assert.ok(appJs.includes('PRO-FORMA TAX INVOICE ESTIMATE'), 'invoice preview must be clearly marked as a pro-forma estimate');
+});

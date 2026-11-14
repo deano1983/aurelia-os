@@ -82,6 +82,19 @@ test('Velvet Cadence v1.1: content output is specific, actionable and handles an
   assert.equal(empty.carouselSlides.length, 4);
 });
 
+test('Velvet Cadence v1.2 First Post Studio: generates distinct authority, punchy and story drafts', () => {
+  const transcript = 'We doubled qualified discovery calls in six weeks by attaching one client metric to every post.';
+  const authority = engine.voiceToAuthority(transcript, 'Pipeline_Q4.xlsx', { tone: 'authority', audience: 'founders' });
+  const punchy = engine.voiceToAuthority(transcript, 'Pipeline_Q4.xlsx', { tone: 'punchy', audience: 'founders' });
+  const story = engine.voiceToAuthority(transcript, 'Pipeline_Q4.xlsx', { tone: 'story', audience: 'founders' });
+  assert.notEqual(authority.linkedinPost, punchy.linkedinPost);
+  assert.notEqual(punchy.linkedinPost, story.linkedinPost);
+  assert.ok(punchy.linkedinPost.includes('No blank page'));
+  assert.ok(story.linkedinPost.includes('unfinished voice note'));
+  assert.ok(story.shortVideoHook.includes('founders'));
+  assert.equal(authority.carouselSlides.length, 4);
+});
+
 test('Assisted 2-Tap Native Handoff: resolves icloud://, onedrive://, and gdrive:// deep-link packets for IG Reels, TikTok, LinkedIn, and Board Deck', () => {
   const demo = engine.getInitialDemoState();
   const reelItem = demo.items[1];
@@ -178,7 +191,7 @@ test('Dual-Provider Checkout Engine: generates Stripe Direct, Lemon Squeezy MoR 
   assert.equal(s2.amountAud, 399);
   assert.equal(s2.provider, 'lemonsqueezy');
   assert.equal(typeof s2.lemonSqueezyCheckoutUrl, 'undefined');
-  assert.equal(s1.eftBankDetails.bsb, '772-772');
+  assert.equal(s1.eftBankDetails.bsb, 'Supplied on verified corporate remittance request');
 });
 
 

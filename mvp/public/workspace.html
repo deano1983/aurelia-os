@@ -68,6 +68,7 @@ code{word-break:break-all;background:#e2e8f0;padding:2px 5px;border-radius:4px;f
       <a class="deck-link" href="./index.html" style="background:#fff;color:#1e1b2e">&larr; Landing page</a>
       <button class="gold sm" id="installPwaBtn" onclick="installAppPrompt()" title="Install Aurelia OS on Windows Desktop, iOS Home Screen, or Android">&#128242; Install App (iOS / Win / Android)</button>
       <button class="outline sm" onclick="resetDemo()" title="Restore default demo state &amp; collision scenario">&#8635; Reset Demo</button>
+      <button class="outline sm" onclick="clearAllUserData()" title="Delete saved workspace, trial and drafts from this browser">Clear All Data</button>
       <a class="deck-link" href="./clients.html" style="background:#312e48;color:#fde68a">100-Client Outbound CRM &rarr;</a>
       <a class="deck-link" href="./outreach.html" style="background:#15803d;color:#fff">Outreach Console &rarr;</a>
       <a class="deck-link" href="./deck.html">View Product &amp; Viability Deck &rarr;</a>
@@ -159,8 +160,22 @@ code{word-break:break-all;background:#e2e8f0;padding:2px 5px;border-radius:4px;f
         <select id="proofAssetSelect" onchange="runVoice()"></select>
       </div>
       <div style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap">
+        <div style="flex:1;min-width:150px">
+          <label for="voiceTone" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">3. Writing style:</label>
+          <select id="voiceTone">
+            <option value="authority">Executive authority</option>
+            <option value="punchy">Short & punchy</option>
+            <option value="story">Human story</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <label for="voiceAudience" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">4. Audience:</label>
+          <input id="voiceAudience" type="text" value="executives and consultants">
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;margin-top:8px">
         <button class="outline" id="micBtn" onclick="toggleVoiceDictation()">&#127897; Dictate Live Voice Note</button>
-        <button class="gold" onclick="runVoice()">Generate LinkedIn Post + 4-Slide Carousel + Video Hook</button>
+        <button class="gold" onclick="runVoice()">Generate 3 editable draft options</button>
       </div>
     </div>
     <div id="voiceOut" style="margin-top:12px"></div>

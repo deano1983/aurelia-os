@@ -3,6 +3,14 @@
 
 const WORKSPACE_STORAGE_KEY = 'aurelia.workspace.v1';
 const TRIAL_STORAGE_KEY = 'aurelia.trial.v1';
+const DRAFTS_STORAGE_KEY = 'aurelia.drafts.v1';
+const VOICE_VARIANTS = [
+  { id: 'authority', label: 'Executive authority' },
+  { id: 'punchy', label: 'Short & punchy' },
+  { id: 'story', label: 'Human story' },
+];
+let voiceVariants = [];
+let currentVoiceIndex = 0;
 
 function readStoredWorkspace() {
   try {
@@ -20,6 +28,20 @@ function persistWorkspace() {
 
 function clearStoredWorkspace() {
   try { localStorage.removeItem(WORKSPACE_STORAGE_KEY); } catch (_) {}
+}
+
+async function clearAllUserData() {
+  try {
+    localStorage.removeItem(WORKSPACE_STORAGE_KEY);
+    localStorage.removeItem(TRIAL_STORAGE_KEY);
+    localStorage.removeItem(DRAFTS_STORAGE_KEY);
+  } catch (_) {}
+  localState = AureliaEngine.getInitialDemoState();
+  voiceVariants = [];
+  lastVoiceBundle = null;
+  await postApi('/api/reset');
+  showToast('Cleared saved workspace, trial and drafts from this browser.');
+  await render();
 }
 
 function readTrial() {
@@ -184,9 +206,9 @@ function renderReleasePanel() {
     ? '<button class="gold sm" onclick="startTrial()">Start my 7 days — no card</button>'
     : '<a class="deck-link" href="#b2bPanel">Choose a plan &rarr;</a>';
   el.innerHTML = `<div class="mode-banner" style="background:#f0fdf4;border:2px solid #15803d;color:#166534;margin-bottom:16px">` +
-    `<div><div style="font-size:16px;font-weight:900">Velvet Cadence v1.1 · ${status}</div>` +
-    `<div style="font-size:13px">Your assets and deadlines now persist on this device. No account needed for the trial.</div></div>` +
-    `<div style="display:flex;gap:8px;flex-wrap:wrap">${action}</div></div>`;
+    `<div><div style="font-size:16px;font-weight:900">Velvet Cadence v1.2 · ${status}</div>` +
+    `<div style="font-size:13px">No login required: your workspace, trial and drafts are stored locally in this browser. Do not enter confidential data on a shared computer; use Clear All Data before leaving a shared device.</div></div>` +
+    `<div style="display:flex;gap:8px;flex-wrap:wrap">${action}<a class="deck-link" href="./privacy.html" style="background:#fff;color:#1e1b2e">Privacy &amp; terms</a></div></div>`;
 }
 
 async function render() {
@@ -206,11 +228,11 @@ async function render() {
   document.getElementById('kpiStrip').innerHTML =
     `<div class="kpi"><div class="kpi-label">Raw Cloud Media Indexed</div><div class="kpi-val">${r.metrics.rawMbSaved} MB</div></div>` +
     `<div class="kpi"><div class="kpi-label">Metadata Pointer Footprint</div><div class="kpi-val">${r.metrics.pointerKbUsed} KB</div></div>` +
-    `<div class="kpi"><div class="kpi-label">Server Video Egress</div><div class="kpi-val" style="color:#15803d">$0.00 (94% GM)</div></div>` +
+    `<div class="kpi"><div class="kpi-label">Server Video Egress</div><div class="kpi-val" style="color:#15803d">$0.00 (pointer-only)</div></div>` +
     `<div class="kpi"><div class="kpi-label">Executive Dossier Readiness</div><div class="kpi-val">${boardDossier.score}% (${boardDossier.status.replace('_', ' ')})</div></div>`;
 
   document.getElementById('metrics').innerHTML =
-    `&#10004; Raw Cloud Media Indexed: <b>${r.metrics.rawMbSaved} MB</b> &middot; Pointer Sync: <b>${r.metrics.pointerKbUsed} KB</b> &middot; Video Egress: <b>$0.00 (94% Gross Margin)</b>`;
+    `&#10004; Raw Cloud Media Indexed: <b>${r.metrics.rawMbSaved} MB</b> &middot; Pointer Sync: <b>${r.metrics.pointerKbUsed} KB</b> &middot; Server Video Egress: <b>$0.00 (metadata pointers only)</b>`;
 
   const cb = document.getElementById('collisionBox');
   cb.innerHTML = r.collisions.length
@@ -260,6 +282,7 @@ async function render() {
 
   populateProofSelect(r.assets);
   if (!lastVoiceBundle) runVoice();
+  else renderVoiceWorkspace();
 }
 async function cascade() {
   const data = await postApi('/api/cascade');
@@ -360,32 +383,113 @@ async function addCommandItem() {
   showToast('Added to your timeline and saved on this device.');
   await render();
 }
+function readDraftHistory() {
+  try {
+    const history = JSON.parse(localStorage.getItem(DRAFTS_STORAGE_KEY) || '[]');
+    return Array.isArray(history) ? history : [];
+  } catch (_) { return []; }
+}
+
+function persistCurrentDraft() {
+  const history = readDraftHistory();
+  if (!history.length || !lastVoiceBundle) return;
+  history[0].variants = voiceVariants;
+  history[0].updatedAt = new Date().toISOString();
+  try { localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(history)); } catch (_) {}
+}
+
+function saveDraftHistory(transcript) {
+  const history = readDraftHistory();
+  history.unshift({
+    id: Date.now(),
+    createdAt: new Date().toISOString(),
+    transcript,
+    variants: voiceVariants,
+  });
+  try { localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(history.slice(0, 5))); } catch (_) {}
+}
+
+function restoreLatestDraft() {
+  const latest = readDraftHistory()[0];
+  if (!latest || !Array.isArray(latest.variants) || !latest.variants.length) return false;
+  voiceVariants = latest.variants;
+  currentVoiceIndex = 0;
+  lastVoiceBundle = voiceVariants[0].bundle;
+  const input = document.getElementById('voiceIn');
+  if (input && latest.transcript) input.value = latest.transcript;
+  return true;
+}
+
+function selectVoiceVariant(value) {
+  const index = Number(value);
+  if (!voiceVariants[index]) return;
+  currentVoiceIndex = index;
+  lastVoiceBundle = voiceVariants[index].bundle;
+  persistCurrentDraft();
+  renderVoiceWorkspace();
+}
+
+function updateVoicePart(part, value) {
+  if (!lastVoiceBundle) return;
+  if (part === 'post') lastVoiceBundle.linkedinPost = value;
+  if (part === 'carousel') lastVoiceBundle.carouselSlides = value.split('\n');
+  if (part === 'hook') lastVoiceBundle.shortVideoHook = value;
+  voiceVariants[currentVoiceIndex].bundle = lastVoiceBundle;
+  persistCurrentDraft();
+}
+
+function downloadVoiceDraft() {
+  if (!lastVoiceBundle) return;
+  const markdown = `# LinkedIn post\n\n${lastVoiceBundle.linkedinPost}\n\n# Carousel brief\n\n${lastVoiceBundle.carouselSlides.map((s) => `- ${s}`).join('\n')}\n\n# Video hook\n\n${lastVoiceBundle.shortVideoHook}\n`;
+  const url = URL.createObjectURL(new Blob([markdown], { type: 'text/markdown;charset=utf-8' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'velvet-cadence-draft.md';
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('Markdown draft downloaded.');
+}
+
+function renderVoiceWorkspace() {
+  const out = document.getElementById('voiceOut');
+  if (!out || !lastVoiceBundle) return;
+  const options = voiceVariants.map((v, i) => `<option value="${i}">${v.label}</option>`).join('');
+  out.innerHTML = `<div class="card">` +
+    `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">` +
+    `<b>First Post Studio — choose and edit your draft</b>` +
+    `<div style="display:flex;gap:8px;flex-wrap:wrap"><select id="voiceVariantSelect" onchange="selectVoiceVariant(this.value)" style="width:auto">${options}</select>` +
+    `<button class="outline sm" onclick="downloadVoiceDraft()">Download .md</button></div></div>` +
+    `<div style="font-size:13px;color:#166534;background:#f0fdf4;padding:8px;border-radius:6px;margin-bottom:10px">Your edits save automatically on this device. Nothing publishes until you copy or download it.</div>` +
+    `<label for="voicePostEdit" style="font-size:13px;font-weight:800">LinkedIn post (editable)</label>` +
+    `<textarea id="voicePostEdit" rows="10" oninput="updateVoicePart('post',this.value)" style="margin:6px 0 10px"></textarea>` +
+    `<label for="voiceCarouselEdit" style="font-size:13px;font-weight:800">4-slide carousel brief (editable)</label>` +
+    `<textarea id="voiceCarouselEdit" rows="7" oninput="updateVoicePart('carousel',this.value)" style="margin:6px 0 10px"></textarea>` +
+    `<label for="voiceHookEdit" style="font-size:13px;font-weight:800">Short-form video hook (editable)</label>` +
+    `<textarea id="voiceHookEdit" rows="3" oninput="updateVoicePart('hook',this.value)" style="margin:6px 0 10px"></textarea>` +
+    `<div class="btn-row"><button class="gold sm" onclick="copyVoicePart('post')">Copy LinkedIn post</button>` +
+    `<button class="outline sm" onclick="copyVoicePart('carousel')">Copy carousel</button>` +
+    `<button class="outline sm" onclick="copyVoicePart('hook')">Copy video hook</button></div></div>`;
+  document.getElementById('voiceVariantSelect').value = String(currentVoiceIndex);
+  document.getElementById('voicePostEdit').value = lastVoiceBundle.linkedinPost;
+  document.getElementById('voiceCarouselEdit').value = lastVoiceBundle.carouselSlides.join('\n');
+  document.getElementById('voiceHookEdit').value = lastVoiceBundle.shortVideoHook;
+}
+
 async function runVoice() {
   const transcript = (document.getElementById('voiceIn') && document.getElementById('voiceIn').value) || '';
   const select = document.getElementById('proofAssetSelect');
   const proofAsset = (select && select.value) || 'Q3 Board Financial Pack.xlsx (Windows / ONEDRIVE)';
+  const audience = (document.getElementById('voiceAudience') && document.getElementById('voiceAudience').value) || 'executives and consultants';
+  const preferredTone = (document.getElementById('voiceTone') && document.getElementById('voiceTone').value) || 'authority';
 
-  let bundle = await postApi('/api/voice', { transcript, proofAsset });
-
-  if (!bundle || !bundle.linkedinPost) {
-    bundle = AureliaEngine.voiceToAuthority(transcript, proofAsset);
-  }
-  lastVoiceBundle = bundle;
-
-  document.getElementById('voiceOut').innerHTML =
-    `<div class="card">` +
-    `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">` +
-    `<b>1. LinkedIn Executive Authority Post:</b>` +
-    `<button class="gold sm" onclick="copyVoicePart('post')">1-Click Copy LinkedIn Post</button></div>` +
-    `<pre style="white-space:pre-wrap;font-family:inherit;font-size:15px;background:#fff;padding:10px;border:1px solid #cbd5e1;border-radius:8px;margin:8px 0">${bundle.linkedinPost}</pre>` +
-    `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:10px">` +
-    `<b>2. 4-Slide Authority Carousel Brief:</b>` +
-    `<button class="outline sm" onclick="copyVoicePart('carousel')">1-Click Copy 4-Slide Brief</button></div>` +
-    `<div style="background:#fff;padding:10px;border:1px solid #cbd5e1;border-radius:8px;margin:8px 0;font-size:14.5px">${bundle.carouselSlides.map((s) => '&bull; ' + s).join('<br>')}</div>` +
-    `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:10px">` +
-    `<b>3. Short-Form Vertical Video Hook (IG Reels / TikTok / Shorts):</b>` +
-    `<button class="outline sm" onclick="copyVoicePart('hook')">1-Click Copy Video Hook</button></div>` +
-    `<div style="background:#fff;padding:10px;border:1px solid #cbd5e1;border-radius:8px;margin-top:8px;font-size:14.5px">${bundle.shortVideoHook}</div></div>`;
+  voiceVariants = VOICE_VARIANTS.map((variant) => ({
+    ...variant,
+    bundle: AureliaEngine.voiceToAuthority(transcript, proofAsset, { tone: variant.id, audience }),
+  }));
+  currentVoiceIndex = Math.max(0, VOICE_VARIANTS.findIndex((v) => v.id === preferredTone));
+  lastVoiceBundle = voiceVariants[currentVoiceIndex].bundle;
+  saveDraftHistory(transcript);
+  renderVoiceWorkspace();
 }
 
 function copyVoicePart(part) {
@@ -428,7 +532,7 @@ function toggleVoiceDictation() {
   if (!SR) {
     showToast('Simulating 90s executive voice capture...');
     document.getElementById('voiceIn').value =
-      'Between our 9 AM board review on Windows OneDrive and my 11 AM client keynote, here is the #1 operational shift that lifted our net margin to 94%: we stopped moving raw files across clouds and unified our executive and authority rhythm.';
+      'Between our 9 AM board review on Windows OneDrive and my 11 AM client keynote, here is the operational shift that saved my team hours every week: we stopped moving raw files across clouds and unified our executive and publishing rhythm.';
     runVoice();
     return;
   }
@@ -508,14 +612,15 @@ function renderInvoice() {
   out.innerHTML =
     `<div class="card" style="background:#fefce8;border-color:#d4af37">` +
     `<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;border-bottom:2px solid #d4af37;padding-bottom:6px;margin-bottom:8px">` +
-    `<b>TAX INVOICE: ${inv.invoiceNumber}</b><span>Issued: ${inv.issuedDate} &middot; ${inv.vendorName}</span></div>` +
+    `<b>PRO-FORMA TAX INVOICE ESTIMATE: ${inv.invoiceNumber}</b><span>Issued: ${inv.issuedDate} &middot; ${inv.vendorName}</span></div>` +
     `<div style="font-size:14px;margin-bottom:6px"><b>Bill To:</b> ${inv.buyerName} (${inv.companyName})</div>` +
     `<div style="font-size:14px;margin-bottom:6px"><b>Subscription:</b> ${inv.productName}</div>` +
     `<div style="font-size:13px;color:#475569;margin-bottom:8px"><b>Recommended Corporate GL Category:</b> <code>${inv.glCategory}</code></div>` +
     `<div style="font-size:15px;background:#fff;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:10px">` +
     `Ex-GST: <b>$${inv.exGstAmount.toFixed(2)}</b> &nbsp;|&nbsp; GST (10%): <b>$${inv.gstAmount.toFixed(2)}</b> &nbsp;|&nbsp; Total Paid/Due: <b style="color:#15803d">$${inv.totalIncGst.toFixed(2)} AUD</b></div>` +
     `<div style="font-size:13px;background:#f8fafc;padding:8px 10px;border:1px dashed #94a3b8;border-radius:6px;margin-bottom:10px">` +
-    `<b>Direct B2B EFT / Remittance:</b> ${session.eftBankDetails.accountName} &middot; BSB <code>${session.eftBankDetails.bsb}</code> &middot; Acc <code>${session.eftBankDetails.accountNumber}</code> &middot; Ref: <code>${session.eftBankDetails.reference}</code></div>` +
+    `<b>Corporate EFT / PO option:</b> ${session.eftBankDetails.paymentTerms} Ref: <code>${session.eftBankDetails.reference}</code> &middot; Contact: <code>velvet.cadence.os@gmail.com</code></div>` +
+    `<div style="font-size:12.5px;color:#475569;margin-bottom:10px">This preview is a pre-checkout expense estimate. A paid Stripe receipt is required for a final tax invoice record; Aurelia Systems is not responsible for misuse of unverified estimates.</div>` +
     `<div class="btn-row" style="margin-bottom:8px">` +
     `<button class="gold sm" onclick="launchCheckout('stripe')">&#128179; Checkout via Stripe (Direct / Apple Pay / Corp Card)</button>` +
     `</div>` +
@@ -556,7 +661,7 @@ function printCorporateInvoice() {
     copyText(inv.approvalMemo, 'Tax Invoice & Finance Memo');
     return;
   }
-  w.document.write(`<!DOCTYPE html><html><head><title>Tax Invoice ${inv.invoiceNumber}</title><style>body{font-family:'Segoe UI',sans-serif;padding:32px;color:#18181b;line-height:1.5}h1{margin:0;color:#1e1b2e}.box{border:2px solid #1e1b2e;border-radius:10px;padding:20px;margin-top:18px}</style></head><body><h1>TAX INVOICE &mdash; ${inv.invoiceNumber}</h1><div><b>Vendor:</b> ${inv.vendorName} &middot; <b>Date:</b> ${inv.issuedDate}</div><div class="box"><div><b>Bill To:</b> ${inv.buyerName} &mdash; ${inv.companyName}</div><div><b>Product:</b> ${inv.productName} (${inv.billingCycle})</div><div><b>Corporate GL Code:</b> ${inv.glCategory}</div><div><b>Included Capabilities:</b> ${inv.features}</div><hr><div><b>Subtotal (Ex-GST):</b> $${inv.exGstAmount.toFixed(2)} AUD</div><div><b>GST (10%):</b> $${inv.gstAmount.toFixed(2)} AUD</div><div style="font-size:20px;font-weight:900;margin-top:6px">TOTAL: $${inv.totalIncGst.toFixed(2)} AUD</div></div><script>window.onload=function(){window.print();}</script></body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><title>Pro-Forma Tax Invoice Estimate ${inv.invoiceNumber}</title><style>body{font-family:'Segoe UI',sans-serif;padding:32px;color:#18181b;line-height:1.5}h1{margin:0;color:#1e1b2e}.box{border:2px solid #1e1b2e;border-radius:10px;padding:20px;margin-top:18px}</style></head><body><h1>PRO-FORMA TAX INVOICE ESTIMATE &mdash; ${inv.invoiceNumber}</h1><div><b>Vendor:</b> ${inv.vendorName} &middot; <b>Date:</b> ${inv.issuedDate}</div><div class="box"><div><b>Bill To:</b> ${inv.buyerName} &mdash; ${inv.companyName}</div><div><b>Product:</b> ${inv.productName} (${inv.billingCycle})</div><div><b>Corporate GL Code:</b> ${inv.glCategory}</div><div><b>Included Capabilities:</b> ${inv.features}</div><hr><div><b>Subtotal (Ex-GST):</b> $${inv.exGstAmount.toFixed(2)} AUD</div><div><b>GST (10%):</b> $${inv.gstAmount.toFixed(2)} AUD</div><div style="font-size:20px;font-weight:900;margin-top:6px">ESTIMATED TOTAL: $${inv.totalIncGst.toFixed(2)} AUD</div><p style="font-size:12px;color:#475569;margin-top:12px">Valid as a tax invoice only when paired with a paid Stripe receipt or confirmed corporate EFT remittance.</p></div><script>window.onload=function(){window.print();}</script></body></html>`);
   w.document.close();
 }
 
@@ -581,10 +686,14 @@ function renderPartnerKit() {
 window.setMode = setMode;
 window.cascade = cascade;
 window.resetDemo = resetDemo;
+window.clearAllUserData = clearAllUserData;
 window.addAssetPointer = addAssetPointer;
 window.addCommandItem = addCommandItem;
 window.startTrial = startTrial;
 window.runVoice = runVoice;
+window.selectVoiceVariant = selectVoiceVariant;
+window.updateVoicePart = updateVoicePart;
+window.downloadVoiceDraft = downloadVoiceDraft;
 window.copyVoicePart = copyVoicePart;
 window.copyText = copyText;
 window.openHandoff = openHandoff;
@@ -597,6 +706,7 @@ window.printCorporateInvoice = printCorporateInvoice;
 window.renderPartnerKit = renderPartnerKit;
 
 (function initFromUrl() {
+  restoreLatestDraft();
   try {
     const params = new URLSearchParams(window.location.search);
     const urlMode = params.get('mode');
