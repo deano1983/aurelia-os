@@ -27,6 +27,8 @@ const MIME = {
 };
 
 let state = engine.getInitialDemoState();
+const ctlRooms = new Map();
+const CTL_PACKET_RE = /^CTL1\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{16,}$/;
 
 function buildStatePayload() {
   const collisions = engine.detectCollisions(state.items, 2);
@@ -98,6 +100,38 @@ const server = http.createServer(async (req, res) => {
       const item = engine.createCommandItem({ ...b, id: 'cmd_' + Date.now() });
       state.items.push(item);
       return send(res, 201, { item, ...buildStatePayload() });
+    }
+    if (req.method === 'POST' && u.pathname === '/api/items/toggle') {
+      const b = await readBody(req);
+      state.items = state.items.map((i) => (i.id === b.id ? { ...i, completed: !i.completed } : i));
+      return send(res, 200, buildStatePayload());
+    }
+    if (req.method === 'POST' && u.pathname === '/api/items/delete') {
+      const b = await readBody(req);
+      state.items = state.items.filter((i) => i.id !== b.id);
+      return send(res, 200, buildStatePayload());
+    }
+    if (req.method === 'GET' && u.pathname === '/api/calendar.ics') {
+      const ics = engine.exportCalendarIcs(state.items);
+      res.writeHead(200, { 'Content-Type': 'text/calendar; charset=utf-8' });
+      return res.end(ics);
+    }
+    if (req.method === 'GET' && u.pathname === '/api/ctl-room') {
+      const room = String(u.searchParams.get('room') || 'exec-ea-default').slice(0, 64);
+      return send(res, 200, { room, packets: ctlRooms.get(room) || [] });
+    }
+    if (req.method === 'POST' && u.pathname === '/api/ctl-room') {
+      const b = await readBody(req);
+      const room = String(b.room || 'exec-ea-default').slice(0, 64);
+      const packet = String(b.packet || '').trim();
+      if (!CTL_PACKET_RE.test(packet)) {
+        return send(res, 400, { error: 'Rejected: server accepts only client-encrypted CTL1 packets (zero-plaintext relay).' });
+      }
+      const list = ctlRooms.get(room) || [];
+      const entry = { id: 'pkt_' + Date.now(), receivedAt: new Date().toISOString(), senderHint: String(b.senderHint || 'Encrypted Peer').slice(0, 60), packet };
+      list.unshift(entry);
+      ctlRooms.set(room, list.slice(0, 50));
+      return send(res, 201, { ok: true, room, entry, count: Math.min(list.length, 50) });
     }
     if (req.method === 'POST' && u.pathname === '/api/handoff') {
       const b = await readBody(req);

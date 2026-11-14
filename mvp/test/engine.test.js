@@ -194,4 +194,84 @@ test('Dual-Provider Checkout Engine: generates Stripe Direct, Lemon Squeezy MoR 
   assert.equal(s1.eftBankDetails.bsb, 'Supplied on verified corporate remittance request');
 });
 
+test('C.T.L. Encrypted Interoffice Relay: AES-256-GCM encrypts/decrypts and rejects wrong passphrase or tampered ciphertext', async () => {
+  const secretBody = 'Hold Q4 board margin announcement until Chair signs off at 09:30 AEST.';
+  const sealed = await engine.encryptCtlMessage({
+    sender: 'Sarah Jenkins (MD)',
+    recipientRole: 'EA / Ghostwriter',
+    subject: 'Board Sign-Off',
+    attachmentUri: 'onedrive://finance/q3-board-financial-pack.xlsx',
+    body: secretBody,
+    passphrase: 'correct-horse-battery',
+  });
+  assert.match(sealed.packet, /^CTL1\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
+  assert.ok(!sealed.packet.includes('Chair'), 'ciphertext must never expose plaintext');
+
+  const opened = await engine.decryptCtlMessage(sealed.packet, 'correct-horse-battery');
+  assert.equal(opened.sender, 'Sarah Jenkins (MD)');
+  assert.equal(opened.body, secretBody);
+  assert.equal(opened.attachmentUri, 'onedrive://finance/q3-board-financial-pack.xlsx');
+
+  await assert.rejects(
+    () => engine.decryptCtlMessage(sealed.packet, 'wrong-passphrase'),
+    /Decryption failed/
+  );
+
+  const flipped = sealed.packet.slice(0, -2) + (sealed.packet.endsWith('AA') ? 'BB' : 'AA');
+  await assert.rejects(
+    () => engine.decryptCtlMessage(flipped, 'correct-horse-battery'),
+    /Decryption failed/
+  );
+});
+
+test('Sovereign Brief .ics Calendar Export & Completed Deadline Filtering', () => {
+  const demo = engine.getInitialDemoState();
+  const ics = engine.exportCalendarIcs(demo.items, 'Sovereign Brief Test');
+  assert.ok(ics.includes('BEGIN:VCALENDAR'));
+  assert.ok(ics.includes('SUMMARY:Q3 Board Financial Report Sign-Off'));
+  assert.ok(ics.includes('BEGIN:VALARM'));
+
+  const withCompleted = demo.items.map((item, idx) => (idx === 1 ? { ...item, completed: true } : item));
+  assert.equal(engine.detectCollisions(withCompleted, 2).length, 0, 'completed item must clear schedule collision');
+  const icsAfter = engine.exportCalendarIcs(withCompleted);
+  assert.ok(!icsAfter.includes('LinkedIn Authority Carousel + IG Reel Drop'), 'completed item must be omitted from active .ics export');
+});
+
+test('GlowGrid Studio Streak Radar & Sponsor Rate-Card Generator', () => {
+  const streak = engine.computeCreatorStreak(['2026-11-12', '2026-11-13', '2026-11-14'], '2026-11-14');
+  assert.equal(streak.currentStreakDays, 3);
+  assert.equal(streak.longestStreakDays, 3);
+  assert.equal(streak.consistencyScore, 75);
+  assert.equal(streak.checkedInToday, true);
+
+  const kit = engine.generateCreatorMediaKit({
+    creatorName: 'Claire Media',
+    niche: 'Executive Tech & Creator Systems',
+    totalFollowers: 30000,
+    avgReelViews: 15000,
+    cpmAud: 50,
+  });
+  assert.ok(kit.singleReelAud >= 1000);
+  assert.ok(kit.threePartBundleAud > kit.singleReelAud * 2);
+  assert.ok(kit.markdown.includes('Claire Media'));
+});
+
+test('Aurelia OS Suite Backup & Restore: round-trips aurelia.bundle.v1 and strips unencrypted vault entries', () => {
+  const bundle = engine.exportWorkspaceBundle({
+    workspace: engine.getInitialDemoState(),
+    trial: { startedAt: 1794600000000 },
+    streakCheckIns: ['2026-11-14'],
+    ctlVault: [
+      { id: 'ok', packet: 'CTL1.aaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbb.cccccccccccccccc' },
+      { id: 'bad', packet: 'PLAINTEXT_SHOULD_BE_DROPPED' },
+    ],
+  });
+  assert.equal(bundle.ctlVault.length, 1);
+  const restored = engine.validateWorkspaceBundle(JSON.stringify(bundle));
+  assert.equal(restored.schema, 'aurelia.bundle.v1');
+  assert.equal(restored.workspace.items.length, 4);
+  assert.throws(() => engine.validateWorkspaceBundle('{"schema":"wrong"}'), /Invalid backup file/);
+});
+
+
 

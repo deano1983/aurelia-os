@@ -67,6 +67,9 @@ code{word-break:break-all;background:#e2e8f0;padding:2px 5px;border-radius:4px;f
     <div class="header-actions">
       <a class="deck-link" href="./index.html" style="background:#fff;color:#1e1b2e">&larr; Landing page</a>
       <button class="gold sm" id="installPwaBtn" onclick="installAppPrompt()" title="Install Aurelia OS on Windows Desktop, iOS Home Screen, or Android">&#128242; Install App (iOS / Win / Android)</button>
+      <button class="outline sm" onclick="exportWorkspaceJson()" title="Download full JSON backup of your workspace, drafts, streak and encrypted vault">&#11015; Export Backup .json</button>
+      <button class="outline sm" onclick="document.getElementById('importBundleInput').click()" title="Restore a saved Aurelia OS JSON backup">&#11014; Import Backup</button>
+      <input id="importBundleInput" type="file" accept="application/json,.json" style="display:none" onchange="importWorkspaceJson(this)">
       <button class="outline sm" onclick="resetDemo()" title="Restore default demo state &amp; collision scenario">&#8635; Reset Demo</button>
       <button class="outline sm" onclick="clearAllUserData()" title="Delete saved workspace, trial and drafts from this browser">Clear All Data</button>
       <a class="deck-link" href="./clients.html" style="background:#312e48;color:#fde68a">100-Client Outbound CRM &rarr;</a>
@@ -92,7 +95,10 @@ code{word-break:break-all;background:#e2e8f0;padding:2px 5px;border-radius:4px;f
     <div class="panel" id="timelinePanel">
       <h2>
         <span id="timelineTitle">Unified Daily Command Timeline (Reports, Uploads &amp; Life)</span>
-        <span class="badge" id="timelineCountBadge">4 Active</span>
+        <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="outline sm" onclick="downloadCalendarIcs()" title="Export active deadlines &amp; protected boundaries to Outlook, Apple Calendar or Google Calendar">&#128197; Export .ics Calendar</button>
+          <span class="badge" id="timelineCountBadge">4 Active</span>
+        </span>
       </h2>
       <div class="card" style="background:#f0fdf4;border-color:#15803d">
         <div style="font-size:14px;color:#166534;margin-bottom:8px">+ Add your own deadline or publishing slot</div>
@@ -179,6 +185,89 @@ code{word-break:break-all;background:#e2e8f0;padding:2px 5px;border-radius:4px;f
       </div>
     </div>
     <div id="voiceOut" style="margin-top:12px"></div>
+  </div>
+
+  <div class="grid">
+    <div class="panel" id="ctlPanel">
+      <h2>
+        <span>C.T.L. Encrypted Interoffice Approval &amp; Chat Relay</span>
+        <span class="badge b-executive">AES-256-GCM · Zero-Plaintext</span>
+      </h2>
+      <div style="font-size:14px;color:#475569;margin-bottom:10px">
+        End-to-end client-side encryption (<code>PBKDF2-SHA256</code> 120,000 rounds + <code>AES-256-GCM</code>) for Executive &harr; EA / Ghostwriter approvals and cloud proof URIs. Passphrases never touch storage; URL <code>#ctl=</code> handoff links keep ciphertext in the browser hash fragment so nothing is sent to static servers.
+      </div>
+      <div class="form-grid">
+        <div>
+          <label for="ctlSender" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Sender Desk / Role:</label>
+          <input id="ctlSender" type="text" value="Sarah Jenkins (Managing Director)">
+        </div>
+        <div>
+          <label for="ctlRecipient" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Recipient Role:</label>
+          <input id="ctlRecipient" type="text" value="Executive Assistant / Ghostwriter">
+        </div>
+        <div>
+          <label for="ctlSubject" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Channel / Subject:</label>
+          <input id="ctlSubject" type="text" value="Board Pack & LinkedIn Proof Sign-Off">
+        </div>
+        <div>
+          <label for="ctlPassphrase" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Shared Room Passphrase (min 6 chars):</label>
+          <input id="ctlPassphrase" type="password" placeholder="Enter shared passphrase (never saved)" autocomplete="off">
+        </div>
+        <div style="grid-column: 1 / -1">
+          <label for="ctlAssetSelect" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Attach Cloud Proof Pointer (optional):</label>
+          <select id="ctlAssetSelect"></select>
+        </div>
+        <div style="grid-column: 1 / -1">
+          <label for="ctlBody" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Confidential Interoffice Note / Sign-Off Instruction:</label>
+          <textarea id="ctlBody" rows="3">Approved Q3 EBITDA slide and LinkedIn carousel draft. Hold external release until 09:30 AEST after board chair sign-off.</textarea>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="gold sm" onclick="sealCtlMessage()">&#128274; Seal &amp; Encrypt Packet (AES-256-GCM)</button>
+        <button class="outline sm" onclick="fillLatestDraftIntoCtl()">Load Current LinkedIn Draft</button>
+      </div>
+      <div id="ctlSealedOut" style="margin-top:12px"></div>
+
+      <div class="card" style="margin-top:14px;background:#f8fafc;border-color:#94a3b8">
+        <div style="font-size:14px;font-weight:900;color:#1e1b2e;margin-bottom:6px">&#128275; Decrypt Incoming <code>CTL1.</code> Packet or <code>#ctl=</code> Link</div>
+        <textarea id="ctlDecryptIn" rows="2" placeholder="Paste CTL1.<salt>.<iv>.<ciphertext> packet here (auto-filled when opening a #ctl= link)"></textarea>
+        <div class="btn-row">
+          <button class="outline sm" onclick="unlockCtlPacket()">Unlock &amp; Verify Authenticity</button>
+        </div>
+        <div id="ctlDecryptedOut" style="margin-top:10px"></div>
+      </div>
+      <div id="ctlVaultList" style="margin-top:12px"></div>
+    </div>
+
+    <div class="panel" id="glowgridPanel">
+      <h2>
+        <span>GlowGrid Studio: Creator Consistency Radar &amp; Sponsor Rate Card</span>
+        <span class="badge b-creator">Streak + Media Kit</span>
+      </h2>
+      <div id="streakBox" style="margin-bottom:14px"></div>
+      <div class="card" style="background:#fefce8;border-color:#d4af37">
+        <div style="font-size:14px;font-weight:900;color:#1e1b2e;margin-bottom:8px">Brand Partnership &amp; UGC Rate-Card Calculator (AUD)</div>
+        <div class="form-grid">
+          <div>
+            <label for="mkName" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Creator / Handle:</label>
+            <input id="mkName" type="text" value="Aurelia Creator Studio" oninput="renderMediaKit()">
+          </div>
+          <div>
+            <label for="mkNiche" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Positioning / Niche:</label>
+            <input id="mkNiche" type="text" value="Executive Leadership &amp; 5-to-9 Creator Systems" oninput="renderMediaKit()">
+          </div>
+          <div>
+            <label for="mkFollowers" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Combined Followers:</label>
+            <input id="mkFollowers" type="number" min="500" step="500" value="24000" oninput="renderMediaKit()">
+          </div>
+          <div>
+            <label for="mkViews" style="font-size:13px;color:#475569;display:block;margin-bottom:4px">Avg 30-Day Views / Video:</label>
+            <input id="mkViews" type="number" min="500" step="500" value="11500" oninput="renderMediaKit()">
+          </div>
+        </div>
+        <div id="mediaKitOut"></div>
+      </div>
+    </div>
   </div>
 
   <div class="grid">
