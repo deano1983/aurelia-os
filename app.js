@@ -4,6 +4,17 @@
 const WORKSPACE_STORAGE_KEY = 'aurelia.workspace.v1';
 const TRIAL_STORAGE_KEY = 'aurelia.trial.v1';
 const DRAFTS_STORAGE_KEY = 'aurelia.drafts.v1';
+const STREAK_STORAGE_KEY = 'aurelia.streak.v1';
+const CTL_STORAGE_KEY = 'aurelia.ctl.v1';
+
+function escapeHtml(val) {
+  return String(val == null ? '' : val)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 const VOICE_VARIANTS = [
   { id: 'authority', label: 'Executive authority' },
   { id: 'punchy', label: 'Short & punchy' },
@@ -35,12 +46,18 @@ async function clearAllUserData() {
     localStorage.removeItem(WORKSPACE_STORAGE_KEY);
     localStorage.removeItem(TRIAL_STORAGE_KEY);
     localStorage.removeItem(DRAFTS_STORAGE_KEY);
+    localStorage.removeItem(STREAK_STORAGE_KEY);
+    localStorage.removeItem(CTL_STORAGE_KEY);
   } catch (_) {}
   localState = AureliaEngine.getInitialDemoState();
   voiceVariants = [];
   lastVoiceBundle = null;
+  const decOut = document.getElementById('ctlDecryptedOut');
+  if (decOut) decOut.innerHTML = '';
+  const sealOut = document.getElementById('ctlSealedOut');
+  if (sealOut) sealOut.innerHTML = '';
   await postApi('/api/reset');
-  showToast('Cleared saved workspace, trial and drafts from this browser.');
+  showToast('Cleared saved workspace, trial, streak, drafts and C.T.L. vault from this browser.');
   await render();
 }
 
@@ -211,8 +228,8 @@ function renderReleasePanel() {
     ? '<button class="gold sm" onclick="startTrial()">Start my 7 days — no card</button>'
     : '<a class="deck-link" href="#b2bPanel">Choose a plan &rarr;</a>';
   el.innerHTML = `<div class="mode-banner" style="background:#f0fdf4;border:2px solid #15803d;color:#166534;margin-bottom:16px">` +
-    `<div><div style="font-size:16px;font-weight:900">Velvet Cadence v1.2 · ${status}</div>` +
-    `<div style="font-size:13px">No login required: your workspace, trial and drafts are stored locally in this browser. Do not enter confidential data on a shared computer; use Clear All Data before leaving a shared device.</div></div>` +
+    `<div><div style="font-size:16px;font-weight:900">Aurelia OS &amp; Velvet Cadence v1.3 · ${status}</div>` +
+    `<div style="font-size:13px">No login required: your workspace, streak, drafts and C.T.L. ciphertext vault live in this browser (exportable via Backup .json). Do not enter confidential data on a shared computer; use Clear All Data before leaving a shared device.</div></div>` +
     `<div style="display:flex;gap:8px;flex-wrap:wrap">${action}<a class="deck-link" href="./privacy.html" style="background:#fff;color:#1e1b2e">Privacy &amp; terms</a></div></div>`;
 }
 
@@ -255,13 +272,16 @@ async function render() {
     return true;
   });
 
-  document.getElementById('timelineCountBadge').textContent = `${items.length} Active`;
+  const activeCount = items.filter((i) => !i.completed).length;
+  document.getElementById('timelineCountBadge').textContent = `${activeCount} Active`;
 
   document.getElementById('timeline').innerHTML = items.map((i) => {
     const dossier = r.dossiers[i.id] || AureliaEngine.scoreDossierReadiness(i, r.assets, r.items);
-    const readinessBadge = dossier.status === 'BOARD_READY'
-      ? `<span class="badge b-ready">Readiness: ${dossier.score}% READY</span>`
-      : `<span class="badge b-action">Readiness: ${dossier.score}% (${dossier.status.replace('_', ' ')})</span>`;
+    const readinessBadge = i.completed
+      ? '<span class="badge b-ready">&#10004; Completed</span>'
+      : dossier.status === 'BOARD_READY'
+        ? `<span class="badge b-ready">Readiness: ${dossier.score}% READY</span>`
+        : `<span class="badge b-action">Readiness: ${dossier.score}% (${dossier.status.replace('_', ' ')})</span>`;
 
     const handoffButtons = i.domain === 'creator'
       ? `<button class="gold sm" onclick="openHandoff('${i.id}','ig_reels')">&#128241; 1-Tap IG Reels Handoff</button>` +
@@ -269,25 +289,43 @@ async function render() {
         `<button class="outline sm" onclick="openHandoff('${i.id}','linkedin')">LinkedIn Handoff</button>`
       : `<button class="gold sm" onclick="openHandoff('${i.id}','board_deck')">&#128193; 1-Tap Executive Dossier Sign-Off</button>`;
 
-    return `<div class="card">` +
-      `<div><span class="badge b-${i.domain}">${i.domain}</span><span class="badge">${i.energyProfile}</span>${readinessBadge}${i.cascaded ? '<span class="badge b-ready">+24h Cascaded</span>' : ''}</div>` +
-      `<div style="font-size:18px;font-weight:900;margin-top:4px;color:#1e1b2e">${i.title}</div>` +
-      `<div style="color:#475569;font-size:14px">${i.channel} &middot; Due: <b>${i.dueAt.slice(0, 16).replace('T', ' ')} UTC</b> ${i.isHardDeadline ? '<span style="color:#b91c1c">(HARD DEADLINE LOCKED)</span>' : '<span style="color:#0369a1">(Flexible Creator Slot)</span>'}</div>` +
-      (i.captionOrBrief ? `<div style="font-size:14px;color:#1e293b;margin-top:4px">Brief: ${i.captionOrBrief}</div>` : '') +
-      `<div class="rem">${i.reminders.map((m) => `<div style="margin-bottom:3px"><span class="rem-stage">${m.stage}</span> ${m.label}</div>`).join('')}</div>` +
-      `<div class="btn-row">${handoffButtons}</div></div>`;
+    const statusActions =
+      `<button class="outline sm" onclick="toggleCommandItem('${i.id}')">${i.completed ? 'Reopen' : '&#10003; Mark Done'}</button>` +
+      `<button class="outline sm" onclick="deleteCommandItem('${i.id}')">Remove</button>`;
+
+    return `<div class="card" style="${i.completed ? 'opacity:0.72;border-color:#86efac;background:#f0fdf4' : ''}">` +
+      `<div><span class="badge b-${i.domain}">${escapeHtml(i.domain)}</span><span class="badge">${escapeHtml(i.energyProfile)}</span>${readinessBadge}${i.cascaded ? '<span class="badge b-ready">+24h Cascaded</span>' : ''}</div>` +
+      `<div style="font-size:18px;font-weight:900;margin-top:4px;color:#1e1b2e;${i.completed ? 'text-decoration:line-through' : ''}">${escapeHtml(i.title)}</div>` +
+      `<div style="color:#475569;font-size:14px">${escapeHtml(i.channel)} &middot; Due: <b>${escapeHtml(String(i.dueAt).slice(0, 16).replace('T', ' '))} UTC</b> ${i.isHardDeadline ? '<span style="color:#b91c1c">(HARD DEADLINE LOCKED)</span>' : '<span style="color:#0369a1">(Flexible Creator Slot)</span>'}</div>` +
+      (i.captionOrBrief ? `<div style="font-size:14px;color:#1e293b;margin-top:4px">Brief: ${escapeHtml(i.captionOrBrief)}</div>` : '') +
+      `<div class="rem">${(i.reminders || []).map((m) => `<div style="margin-bottom:3px"><span class="rem-stage">${escapeHtml(m.stage)}</span> ${escapeHtml(m.label)}</div>`).join('')}</div>` +
+      `<div class="btn-row">${handoffButtons}${statusActions}</div></div>`;
   }).join('');
 
   document.getElementById('assets').innerHTML = r.assets.map((a) =>
-    `<div class="card"><span class="badge b-${a.provider}">${a.providerLabel}</span><span class="badge">${a.osOrigin}</span><span class="badge b-${a.domain}">${a.domain}</span><br>` +
-    `<b style="font-size:17px">${a.title}</b><br>` +
-    `<span style="color:#475569;font-size:14px">Deep-Link URI: <code>${a.externalUri}</code> &middot; Raw Size: <b>${a.rawSizeMb} MB</b> (Pointer: ${a.pointerKb} KB &middot; Egress: $0.00)</span>` +
-    `<div class="btn-row"><button class="outline sm" onclick="copyText('${a.externalUri.replace(/'/g, "\\'")}', 'Cloud Deep-Link URI')">Copy Cloud URI</button></div></div>`
+    `<div class="card"><span class="badge b-${a.provider}">${escapeHtml(a.providerLabel)}</span><span class="badge">${escapeHtml(a.osOrigin)}</span><span class="badge b-${a.domain}">${escapeHtml(a.domain)}</span><br>` +
+    `<b style="font-size:17px">${escapeHtml(a.title)}</b><br>` +
+    `<span style="color:#475569;font-size:14px">Deep-Link URI: <code>${escapeHtml(a.externalUri)}</code> &middot; Raw Size: <b>${Number(a.rawSizeMb) || 0} MB</b> (Pointer: ${Number(a.pointerKb) || 12} KB &middot; Egress: $0.00)</span>` +
+    `<div class="btn-row"><button class="outline sm" onclick="copyText('${String(a.externalUri).replace(/'/g, "\\'")}', 'Cloud Deep-Link URI')">Copy Cloud URI</button></div></div>`
   ).join('');
 
+  const showVelvet = mode === 'all' || mode === 'velvet';
+  const showCtl = mode === 'all' || mode === 'velvet' || mode === 'sovereign';
+  const showGlow = mode === 'all' || mode === 'glowgrid';
+  const velvetEl = document.getElementById('velvetPanel');
+  const ctlEl = document.getElementById('ctlPanel');
+  const glowEl = document.getElementById('glowgridPanel');
+  if (velvetEl) velvetEl.style.display = showVelvet ? '' : 'none';
+  if (ctlEl) ctlEl.style.display = showCtl ? '' : 'none';
+  if (glowEl) glowEl.style.display = showGlow ? '' : 'none';
+
   populateProofSelect(r.assets);
+  populateCtlAssetSelect(r.assets);
   if (!lastVoiceBundle) runVoice();
   else renderVoiceWorkspace();
+  renderCtlVault();
+  renderStreak();
+  renderMediaKit();
 }
 async function cascade() {
   const data = await postApi('/api/cascade');
@@ -688,12 +726,309 @@ function renderPartnerKit() {
     `<button class="outline sm" onclick="copyText(window.location.origin + '/?ref=partner_' + lastPartnerKit.id, '30% Partner Referral Link')">Copy Partner Referral Link</button></div></div>`;
 }
 
+async function toggleCommandItem(id) {
+  const data = await postApi('/api/items/toggle', { id });
+  if (data && Array.isArray(data.items)) {
+    localState.items = data.items;
+  } else {
+    localState.items = localState.items.map((item) => (item.id === id ? { ...item, completed: !item.completed } : item));
+  }
+  persistWorkspace();
+  showToast('Updated timeline item status.');
+  await render();
+}
+
+async function deleteCommandItem(id) {
+  const data = await postApi('/api/items/delete', { id });
+  if (data && Array.isArray(data.items)) {
+    localState.items = data.items;
+  } else {
+    localState.items = localState.items.filter((item) => item.id !== id);
+  }
+  persistWorkspace();
+  showToast('Removed item from timeline.');
+  await render();
+}
+
+function downloadCalendarIcs() {
+  const ics = AureliaEngine.exportCalendarIcs(localState.items, 'Aurelia OS — Sovereign Brief');
+  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'aurelia-sovereign-brief.ics';
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('Exported .ics calendar for Outlook, Apple Calendar & Google Calendar!');
+}
+
+function populateCtlAssetSelect(assets) {
+  const select = document.getElementById('ctlAssetSelect');
+  if (!select) return;
+  const current = select.value;
+  select.innerHTML = `<option value="">(None — message only)</option>` + assets.map((a) =>
+    `<option value="${escapeHtml(a.externalUri)}">${escapeHtml(a.title)} — ${escapeHtml(a.externalUri)}</option>`
+  ).join('');
+  if (current && Array.from(select.options).some((o) => o.value === current)) {
+    select.value = current;
+  }
+}
+
+function readCtlVault() {
+  try {
+    const arr = JSON.parse(localStorage.getItem(CTL_STORAGE_KEY) || '[]');
+    return Array.isArray(arr) ? arr : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function saveCtlVaultEntry(entry) {
+  const arr = readCtlVault();
+  arr.unshift(entry);
+  try { localStorage.setItem(CTL_STORAGE_KEY, JSON.stringify(arr.slice(0, 25))); } catch (_) {}
+}
+
+function fillLatestDraftIntoCtl() {
+  if (!lastVoiceBundle) return;
+  const bodyEl = document.getElementById('ctlBody');
+  if (bodyEl) {
+    bodyEl.value = `Please review & sign off this LinkedIn draft:\n\n${lastVoiceBundle.linkedinPost}`;
+    showToast('Loaded current LinkedIn draft into C.T.L. message box.');
+  }
+}
+
+let lastSealedPacket = '';
+let lastSealedLink = '';
+
+async function sealCtlMessage() {
+  const passphrase = (document.getElementById('ctlPassphrase') && document.getElementById('ctlPassphrase').value) || '';
+  const sender = (document.getElementById('ctlSender') && document.getElementById('ctlSender').value) || 'Executive Desk';
+  const recipientRole = (document.getElementById('ctlRecipient') && document.getElementById('ctlRecipient').value) || 'EA / Ghostwriter';
+  const subject = (document.getElementById('ctlSubject') && document.getElementById('ctlSubject').value) || 'Interoffice Sign-Off';
+  const attachmentUri = (document.getElementById('ctlAssetSelect') && document.getElementById('ctlAssetSelect').value) || '';
+  const body = (document.getElementById('ctlBody') && document.getElementById('ctlBody').value) || '';
+  const out = document.getElementById('ctlSealedOut');
+  if (!out) return;
+
+  try {
+    const sealed = await AureliaEngine.encryptCtlMessage({
+      sender,
+      recipientRole,
+      subject,
+      attachmentUri,
+      body,
+      passphrase,
+    });
+    lastSealedPacket = sealed.packet;
+    lastSealedLink = `${window.location.origin}${window.location.pathname}#ctl=${encodeURIComponent(sealed.packet)}`;
+    saveCtlVaultEntry({
+      id: sealed.meta.id,
+      sentAt: sealed.meta.sentAt,
+      senderHint: `${sealed.meta.sender} -> ${sealed.meta.recipientRole}`,
+      subjectHint: sealed.meta.subject,
+      packet: sealed.packet,
+    });
+    await postApi('/api/ctl-room', { room: 'exec-ea-default', senderHint: sealed.meta.sender, packet: sealed.packet });
+    const decryptIn = document.getElementById('ctlDecryptIn');
+    if (decryptIn && !decryptIn.value) decryptIn.value = sealed.packet;
+    out.innerHTML =
+      `<div class="card" style="background:#f0fdf4;border-color:#15803d">` +
+      `<div style="font-size:13.5px;color:#166534;font-weight:900;margin-bottom:6px">&#128274; Sealed with ${escapeHtml(sealed.algorithm)} (${sealed.byteLength} chars ciphertext)</div>` +
+      `<code style="display:block;max-height:72px;overflow-y:auto;margin-bottom:8px">${escapeHtml(sealed.packet)}</code>` +
+      `<div class="btn-row">` +
+      `<button class="gold sm" onclick="copyText(lastSealedLink, 'Zero-Server Encrypted #ctl Link')">Copy Encrypted #ctl Link</button>` +
+      `<button class="outline sm" onclick="copyText(lastSealedPacket, 'CTL1 Encrypted Packet')">Copy CTL1 Packet</button></div></div>`;
+    renderCtlVault();
+    showToast('Encrypted C.T.L. packet sealed — zero plaintext stored!');
+  } catch (err) {
+    out.innerHTML = `<div class="warn" style="margin:0"><div>&#9888; ${escapeHtml(err.message || err)}</div></div>`;
+  }
+}
+
+async function unlockCtlPacket() {
+  const packet = (document.getElementById('ctlDecryptIn') && document.getElementById('ctlDecryptIn').value) || '';
+  const passphrase = (document.getElementById('ctlPassphrase') && document.getElementById('ctlPassphrase').value) || '';
+  const out = document.getElementById('ctlDecryptedOut');
+  if (!out) return;
+  try {
+    const msg = await AureliaEngine.decryptCtlMessage(packet, passphrase);
+    out.innerHTML =
+      `<div class="card" style="background:#fff;border-color:#15803d;margin:0">` +
+      `<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:6px">` +
+      `<span class="badge b-ready">&#10004; AES-GCM Auth Verified</span>` +
+      `<span style="font-size:12.5px;color:#475569">${escapeHtml(String(msg.sentAt).slice(0, 19).replace('T', ' '))} UTC</span></div>` +
+      `<div style="font-size:14px"><b>From:</b> ${escapeHtml(msg.sender)} &rarr; <b>To:</b> ${escapeHtml(msg.recipientRole)}</div>` +
+      `<div style="font-size:14px;margin-bottom:6px"><b>Subject:</b> ${escapeHtml(msg.subject)}</div>` +
+      (msg.attachmentUri ? `<div style="font-size:13.5px;margin-bottom:6px"><b>Cloud Pointer:</b> <code>${escapeHtml(msg.attachmentUri)}</code></div>` : '') +
+      `<pre style="white-space:pre-wrap;font-family:inherit;font-size:14px;background:#f8fafc;padding:10px;border:1px solid #cbd5e1;border-radius:8px;margin:0">${escapeHtml(msg.body)}</pre></div>`;
+    showToast('C.T.L. packet authenticated & decrypted locally.');
+  } catch (err) {
+    out.innerHTML = `<div class="warn" style="margin:0"><div>&#9888; ${escapeHtml(err.message || err)}</div></div>`;
+  }
+}
+
+function loadCtlVaultPacket(idx) {
+  const vault = readCtlVault();
+  const entry = vault[Number(idx)];
+  if (!entry) return;
+  const decIn = document.getElementById('ctlDecryptIn');
+  if (decIn) decIn.value = entry.packet;
+  showToast('Loaded encrypted packet into decrypt box — enter passphrase to unlock.');
+}
+
+function renderCtlVault() {
+  const el = document.getElementById('ctlVaultList');
+  if (!el) return;
+  const vault = readCtlVault();
+  if (!vault.length) {
+    el.innerHTML = '<div style="font-size:13px;color:#475569">Encrypted Vault: 0 sealed packets on this device.</div>';
+    return;
+  }
+  el.innerHTML =
+    `<div style="font-size:13px;font-weight:900;color:#1e1b2e;margin-bottom:6px">Local Ciphertext Log (${vault.length} sealed packet${vault.length === 1 ? '' : 's'} — zero plaintext stored):</div>` +
+    vault.slice(0, 4).map((v, idx) =>
+      `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:13px">` +
+      `<span><b>${escapeHtml(v.subjectHint || 'Sealed Packet')}</b> &middot; ${escapeHtml(v.senderHint || '')}</span>` +
+      `<button class="outline sm" onclick="loadCtlVaultPacket(${idx})">Load Ciphertext</button></div>`
+    ).join('');
+}
+
+function readStreakCheckIns() {
+  try {
+    const arr = JSON.parse(localStorage.getItem(STREAK_STORAGE_KEY) || '[]');
+    return Array.isArray(arr) ? arr : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function logStreakToday() {
+  const today = new Date().toISOString().slice(0, 10);
+  const next = [...new Set([...readStreakCheckIns(), today])].sort();
+  try { localStorage.setItem(STREAK_STORAGE_KEY, JSON.stringify(next)); } catch (_) {}
+  renderStreak();
+  showToast('Logged today\'s creator upload check-in!');
+}
+
+function renderStreak() {
+  const el = document.getElementById('streakBox');
+  if (!el) return;
+  const stats = AureliaEngine.computeCreatorStreak(readStreakCheckIns());
+  el.innerHTML =
+    `<div class="card" style="background:#f0fdf4;border-color:#15803d;margin:0">` +
+    `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">` +
+    `<div><div style="font-size:16px;font-weight:900;color:#166534">&#128293; Upload Streak: ${stats.currentStreakDays} day${stats.currentStreakDays === 1 ? '' : 's'} &middot; 7-Day Consistency: ${stats.consistencyScore}%</div>` +
+    `<div style="font-size:13px;color:#166534">Published ${stats.last7Count}/4 target slots in last 7 days &middot; Best streak: ${stats.longestStreakDays}d</div></div>` +
+    `<button class="gold sm" onclick="logStreakToday()">${stats.checkedInToday ? '&#10004; Logged Today' : '+ Log Today\'s Upload'}</button></div></div>`;
+}
+
+let lastMediaKit = null;
+
+function renderMediaKit() {
+  const out = document.getElementById('mediaKitOut');
+  if (!out) return;
+  const creatorName = (document.getElementById('mkName') && document.getElementById('mkName').value) || 'Aurelia Creator Studio';
+  const niche = (document.getElementById('mkNiche') && document.getElementById('mkNiche').value) || 'Executive Leadership & 5-to-9 Creator Systems';
+  const totalFollowers = Number(document.getElementById('mkFollowers') && document.getElementById('mkFollowers').value) || 24000;
+  const avgReelViews = Number(document.getElementById('mkViews') && document.getElementById('mkViews').value) || 11500;
+  lastMediaKit = AureliaEngine.generateCreatorMediaKit({ creatorName, niche, totalFollowers, avgReelViews });
+  out.innerHTML =
+    `<div style="font-size:14px;background:#fff;padding:10px;border:1px solid #cbd5e1;border-radius:8px;margin-bottom:8px">` +
+    `<div><b>1x Hero Vertical Video (45–60s):</b> <span style="color:#15803d">$${lastMediaKit.singleReelAud} AUD</span></div>` +
+    `<div><b>3-Part Conversion Bundle:</b> <span style="color:#15803d">$${lastMediaKit.threePartBundleAud} AUD</span></div>` +
+    `<div><b>30-Day Paid Usage / Whitelisting:</b> +$${lastMediaKit.whitelisting30dAud} AUD</div></div>` +
+    `<div class="btn-row">` +
+    `<button class="gold sm" onclick="copyText(lastMediaKit.markdown, 'Sponsor Rate Card')">Copy Rate Card</button>` +
+    `<button class="outline sm" onclick="downloadMediaKitMd()">Download Media Kit .md</button></div>`;
+}
+
+function downloadMediaKitMd() {
+  if (!lastMediaKit) renderMediaKit();
+  const url = URL.createObjectURL(new Blob([lastMediaKit.markdown], { type: 'text/markdown;charset=utf-8' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'glowgrid-media-kit.md';
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('Downloaded GlowGrid Sponsor Media Kit (.md)!');
+}
+
+function exportWorkspaceJson() {
+  const bundle = AureliaEngine.exportWorkspaceBundle({
+    workspace: localState,
+    trial: readTrial(),
+    drafts: readDraftHistory(),
+    streakCheckIns: readStreakCheckIns(),
+    ctlVault: readCtlVault(),
+  });
+  const url = URL.createObjectURL(new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json;charset=utf-8' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `aurelia-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('Downloaded full Aurelia OS workspace backup (.json).');
+}
+
+function importWorkspaceJson(fileInput) {
+  const file = fileInput && fileInput.files && fileInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      const valid = AureliaEngine.validateWorkspaceBundle(String(reader.result || ''));
+      localState = valid.workspace;
+      persistWorkspace();
+      if (valid.trial) localStorage.setItem(TRIAL_STORAGE_KEY, JSON.stringify(valid.trial));
+      localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(valid.drafts));
+      localStorage.setItem(STREAK_STORAGE_KEY, JSON.stringify(valid.streakCheckIns));
+      localStorage.setItem(CTL_STORAGE_KEY, JSON.stringify(valid.ctlVault));
+      restoreLatestDraft();
+      showToast('Workspace backup restored on this device!');
+      await render();
+    } catch (err) {
+      showToast('Backup import failed: ' + (err.message || err));
+    } finally {
+      fileInput.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function loadCtlFromHash() {
+  const h = String(window.location.hash || '');
+  if (!h.startsWith('#ctl=')) return;
+  try {
+    const packet = decodeURIComponent(h.slice(5));
+    const decIn = document.getElementById('ctlDecryptIn');
+    if (decIn && packet.startsWith('CTL1.')) {
+      decIn.value = packet;
+      const panel = document.getElementById('ctlPanel');
+      if (panel && panel.scrollIntoView) panel.scrollIntoView({ behavior: 'smooth' });
+      showToast('Encrypted #ctl packet loaded — enter shared passphrase to unlock.');
+    }
+  } catch (_) {}
+}
+window.addEventListener('hashchange', loadCtlFromHash);
+
 window.setMode = setMode;
 window.cascade = cascade;
 window.resetDemo = resetDemo;
 window.clearAllUserData = clearAllUserData;
 window.addAssetPointer = addAssetPointer;
 window.addCommandItem = addCommandItem;
+window.toggleCommandItem = toggleCommandItem;
+window.deleteCommandItem = deleteCommandItem;
+window.downloadCalendarIcs = downloadCalendarIcs;
+window.sealCtlMessage = sealCtlMessage;
+window.unlockCtlPacket = unlockCtlPacket;
+window.fillLatestDraftIntoCtl = fillLatestDraftIntoCtl;
+window.loadCtlVaultPacket = loadCtlVaultPacket;
+window.logStreakToday = logStreakToday;
+window.renderMediaKit = renderMediaKit;
+window.downloadMediaKitMd = downloadMediaKitMd;
+window.exportWorkspaceJson = exportWorkspaceJson;
+window.importWorkspaceJson = importWorkspaceJson;
 window.startTrial = startTrial;
 window.runVoice = runVoice;
 window.selectVoiceVariant = selectVoiceVariant;
@@ -726,4 +1061,5 @@ window.renderPartnerKit = renderPartnerKit;
   }
   renderInvoice();
   renderPartnerKit();
+  loadCtlFromHash();
 })();

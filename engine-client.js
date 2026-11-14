@@ -116,6 +116,7 @@ function createCommandItem(input) {
     status: input.status || 'scheduled',
     isHardDeadline: Boolean(input.isHardDeadline ?? (itemType !== 'content_upload')),
     dueAt,
+    completed: Boolean(input.completed),
     linkedAssetIds: Array.isArray(input.linkedAssetIds) ? input.linkedAssetIds : [],
     captionOrBrief: String(input.captionOrBrief || ''),
   };
@@ -124,7 +125,7 @@ function createCommandItem(input) {
 }
 
 function detectCollisions(items, windowHours = 2) {
-  const sorted = [...items].sort((a, b) => new Date(a.dueAt) - new Date(b.dueAt));
+  const sorted = [...items].filter((i) => i && !i.completed).sort((a, b) => new Date(a.dueAt) - new Date(b.dueAt));
   const collisions = [];
   const winMs = windowHours * 3600 * 1000;
   for (let i = 0; i < sorted.length; i++) {
@@ -507,6 +508,283 @@ function createDualCheckoutSession(input = {}) {
   };
 }
 
+function getWebCrypto() {
+  if (typeof globalThis !== 'undefined' && globalThis.crypto && globalThis.crypto.subtle) {
+    return globalThis.crypto;
+  }
+  if (typeof require === 'function') {
+    const nodeCrypto = require('crypto');
+    if (nodeCrypto && nodeCrypto.webcrypto) return nodeCrypto.webcrypto;
+  }
+  throw new Error('WebCrypto API is unavailable in this environment.');
+}
+
+function bytesToBase64Url(bytes) {
+  const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  let base64;
+  if (typeof Buffer !== 'undefined') {
+    base64 = Buffer.from(u8).toString('base64');
+  } else {
+    let bin = '';
+    for (let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
+    base64 = btoa(bin);
+  }
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+function base64UrlToBytes(str) {
+  const clean = String(str || '').replace(/-/g, '+').replace(/_/g, '/');
+  const padded = clean + '==='.slice((clean.length + 3) % 4);
+  if (typeof Buffer !== 'undefined') {
+    return new Uint8Array(Buffer.from(padded, 'base64'));
+  }
+  const bin = atob(padded);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+async function deriveCtlKey(passphrase, saltBytes) {
+  const wc = getWebCrypto();
+  const secret = String(passphrase || '');
+  if (secret.length < 6) {
+    throw new Error('Passphrase must be at least 6 characters.');
+  }
+  const enc = new TextEncoder();
+  const baseKey = await wc.subtle.importKey('raw', enc.encode(secret), 'PBKDF2', false, ['deriveKey']);
+  return wc.subtle.deriveKey(
+    { name: 'PBKDF2', salt: saltBytes, iterations: 120000, hash: 'SHA-256' },
+    baseKey,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
+}
+
+async function encryptCtlMessage(input = {}) {
+  const wc = getWebCrypto();
+  const body = String(input.body || '').trim();
+  if (!body) throw new Error('Message body is required.');
+  const payload = {
+    v: 1,
+    id: input.id || ('ctl_' + Date.now() + '_' + Math.floor(100 + Math.random() * 900)),
+    sentAt: input.sentAt || new Date().toISOString(),
+    sender: clipText(input.sender || 'Executive Desk', 80),
+    recipientRole: clipText(input.recipientRole || 'EA / Ghostwriter', 80),
+    subject: clipText(input.subject || 'Approval & Cloud Proof Handoff', 120),
+    body: String(body).slice(0, 4000),
+    attachmentUri: clipText(input.attachmentUri || '', 260),
+  };
+  const salt = wc.getRandomValues(new Uint8Array(16));
+  const iv = wc.getRandomValues(new Uint8Array(12));
+  const key = await deriveCtlKey(input.passphrase, salt);
+  const encoded = new TextEncoder().encode(JSON.stringify(payload));
+  const cipherBuf = await wc.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded);
+  const packet = `CTL1.${bytesToBase64Url(salt)}.${bytesToBase64Url(iv)}.${bytesToBase64Url(new Uint8Array(cipherBuf))}`;
+  return {
+    packet,
+    algorithm: 'AES-256-GCM + PBKDF2-SHA256 (120k)',
+    byteLength: packet.length,
+    meta: { id: payload.id, sentAt: payload.sentAt, sender: payload.sender, recipientRole: payload.recipientRole, subject: payload.subject },
+  };
+}
+
+async function decryptCtlMessage(packet, passphrase) {
+  const wc = getWebCrypto();
+  const raw = String(packet || '').trim();
+  const parts = raw.split('.');
+  if (parts.length !== 4 || parts[0] !== 'CTL1') {
+    throw new Error('Invalid C.T.L. packet format (expected CTL1.<salt>.<iv>.<ciphertext>).');
+  }
+  const salt = base64UrlToBytes(parts[1]);
+  const iv = base64UrlToBytes(parts[2]);
+  const cipher = base64UrlToBytes(parts[3]);
+  const key = await deriveCtlKey(passphrase, salt);
+  let plainBuf;
+  try {
+    plainBuf = await wc.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipher);
+  } catch (_) {
+    throw new Error('Decryption failed: wrong passphrase or tampered ciphertext.');
+  }
+  const parsed = JSON.parse(new TextDecoder().decode(plainBuf));
+  if (!parsed || parsed.v !== 1 || typeof parsed.body !== 'string') {
+    throw new Error('Decrypted C.T.L. payload is malformed.');
+  }
+  return parsed;
+}
+
+function escapeIcsText(val) {
+  return String(val || '')
+    .replace(/\\/g, '\\\\')
+    .replace(/\r?\n/g, '\\n')
+    .replace(/,/g, '\\,')
+    .replace(/;/g, '\\;');
+}
+
+function toIcsUtcStamp(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '20261115T090000Z';
+  return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+}
+
+function exportCalendarIcs(items = [], calendarName = 'Aurelia OS — Sovereign Brief') {
+  const stamp = toIcsUtcStamp(new Date().toISOString());
+  const active = (Array.isArray(items) ? items : []).filter((i) => i && !i.completed);
+  const events = active.map((item) => {
+    const startMs = new Date(item.dueAt).getTime();
+    const safeStartMs = Number.isNaN(startMs) ? Date.now() : startMs;
+    const endMs = safeStartMs + 45 * 60 * 1000;
+    const statusLabel = item.isHardDeadline ? 'HARD DEADLINE LOCKED' : 'FLEXIBLE CREATOR SLOT';
+    const desc = [
+      `Domain: ${item.domain || 'executive'} (${statusLabel})`,
+      `Channel: ${item.channel || 'Aurelia OS'}`,
+      item.captionOrBrief ? `Brief: ${item.captionOrBrief}` : '',
+    ].filter(Boolean).join('\n');
+    return [
+      'BEGIN:VEVENT',
+      `UID:${escapeIcsText(item.id || ('cmd_' + safeStartMs))}@velvetcadence.buzz`,
+      `DTSTAMP:${stamp}`,
+      `DTSTART:${toIcsUtcStamp(new Date(safeStartMs).toISOString())}`,
+      `DTEND:${toIcsUtcStamp(new Date(endMs).toISOString())}`,
+      `SUMMARY:${escapeIcsText(item.title || 'Aurelia Command Item')}`,
+      `DESCRIPTION:${escapeIcsText(desc)}`,
+      'BEGIN:VALARM',
+      'TRIGGER:-PT60M',
+      'ACTION:DISPLAY',
+      `DESCRIPTION:${escapeIcsText('Upcoming: ' + (item.title || 'Command Item'))}`,
+      'END:VALARM',
+      'END:VEVENT',
+    ].join('\r\n');
+  });
+
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Aurelia OS//Sovereign Brief v1.3//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    `X-WR-CALNAME:${escapeIcsText(calendarName)}`,
+    ...events,
+    'END:VCALENDAR',
+    '',
+  ].join('\r\n');
+}
+
+function computeCreatorStreak(checkIns = [], referenceDateIso) {
+  const valid = [...new Set(
+    (Array.isArray(checkIns) ? checkIns : [])
+      .map((d) => String(d || '').slice(0, 10))
+      .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))
+  )].sort();
+
+  const refDay = (referenceDateIso ? String(referenceDateIso).slice(0, 10) : new Date().toISOString().slice(0, 10));
+  const dayMs = 86400000;
+  const toEpochDay = (ymd) => Math.floor(Date.parse(ymd + 'T00:00:00Z') / dayMs);
+  const refEpoch = toEpochDay(refDay);
+  const epochSet = new Set(valid.map(toEpochDay));
+
+  let currentStreakDays = 0;
+  let cursor = epochSet.has(refEpoch) ? refEpoch : (epochSet.has(refEpoch - 1) ? refEpoch - 1 : null);
+  while (cursor !== null && epochSet.has(cursor)) {
+    currentStreakDays++;
+    cursor--;
+  }
+
+  let longestStreakDays = 0;
+  let run = 0;
+  let prev = null;
+  valid.map(toEpochDay).forEach((ep) => {
+    run = prev !== null && ep === prev + 1 ? run + 1 : 1;
+    if (run > longestStreakDays) longestStreakDays = run;
+    prev = ep;
+  });
+
+  let last7Count = 0;
+  for (let d = 0; d < 7; d++) {
+    if (epochSet.has(refEpoch - d)) last7Count++;
+  }
+  const consistencyScore = Math.min(100, Math.round((last7Count / 4) * 100));
+
+  return {
+    checkIns: valid,
+    totalPublishedDays: valid.length,
+    currentStreakDays,
+    longestStreakDays,
+    last7Count,
+    consistencyScore,
+    checkedInToday: epochSet.has(refEpoch),
+  };
+}
+
+function generateCreatorMediaKit(input = {}) {
+  const creatorName = clipText(input.creatorName || 'Creator Studio', 80);
+  const niche = clipText(input.niche || 'Executive Leadership, Tech & 5-to-9 Lifestyle', 120);
+  const avgViews = Math.max(500, Number(input.avgReelViews) || 8500);
+  const followers = Math.max(500, Number(input.totalFollowers) || 18000);
+  const cpmAud = Math.max(15, Math.min(250, Number(input.cpmAud) || 45));
+
+  const baseReel = Math.max(250, Math.round(((avgViews / 1000) * cpmAud + followers * 0.012) / 10) * 10);
+  const singleReelAud = baseReel;
+  const threePartBundleAud = Math.round((baseReel * 2.55) / 10) * 10;
+  const whitelisting30dAud = Math.round((baseReel * 0.4) / 10) * 10;
+
+  const markdown = [
+    `# ${creatorName} — Brand Partnership & UGC Rate Card (AUD)`,
+    '',
+    `- **Positioning / Niche:** ${niche}`,
+    `- **Combined Audience:** ${followers.toLocaleString('en-AU')} followers`,
+    `- **Average Short-Form Views (30-day):** ${avgViews.toLocaleString('en-AU')} views / drop`,
+    `- **Production Workflow:** Zero-blob 4K iPhone capture -> desktop edit -> multi-platform handoff`,
+    '',
+    '## Deliverable Packages (AUD)',
+    `- **1x Vertical Hero Video (IG Reels / TikTok / Shorts, 45–60s):** $${singleReelAud} AUD`,
+    `- **3-Part Authority & Story Conversion Bundle (Hook + Proof + CTA):** $${threePartBundleAud} AUD`,
+    `- **30-Day Paid Usage / Whitelisting Rights Add-On:** +$${whitelisting30dAud} AUD`,
+    '',
+    '## Turnaround & Sign-Off',
+    '- Concept & hook approval within 48 hours of brief; 4K draft link delivered via direct cloud pointer.',
+  ].join('\n');
+
+  return {
+    creatorName,
+    niche,
+    followers,
+    avgViews,
+    cpmAud,
+    singleReelAud,
+    threePartBundleAud,
+    whitelisting30dAud,
+    markdown,
+  };
+}
+
+function exportWorkspaceBundle(bundle = {}) {
+  return {
+    schema: 'aurelia.bundle.v1',
+    exportedAt: new Date().toISOString(),
+    workspace: bundle.workspace && Array.isArray(bundle.workspace.assets) && Array.isArray(bundle.workspace.items)
+      ? bundle.workspace
+      : getInitialDemoState(),
+    trial: bundle.trial || null,
+    drafts: Array.isArray(bundle.drafts) ? bundle.drafts.slice(0, 10) : [],
+    streakCheckIns: Array.isArray(bundle.streakCheckIns) ? bundle.streakCheckIns.slice(0, 366) : [],
+    ctlVault: Array.isArray(bundle.ctlVault)
+      ? bundle.ctlVault.filter((entry) => entry && typeof entry.packet === 'string' && entry.packet.startsWith('CTL1.')).slice(0, 50)
+      : [],
+  };
+}
+
+function validateWorkspaceBundle(raw) {
+  const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  if (!parsed || parsed.schema !== 'aurelia.bundle.v1' || !parsed.workspace) {
+    throw new Error('Invalid backup file: expected schema aurelia.bundle.v1.');
+  }
+  if (!Array.isArray(parsed.workspace.assets) || !Array.isArray(parsed.workspace.items)) {
+    throw new Error('Invalid backup file: workspace assets and items must be arrays.');
+  }
+  return exportWorkspaceBundle(parsed);
+}
+
 const AureliaEngine = {
   PROVIDERS,
   HANDOFF_TARGETS,
@@ -526,6 +804,13 @@ const AureliaEngine = {
   handoffPacket,
   scoreDossierReadiness,
   getInitialDemoState,
+  encryptCtlMessage,
+  decryptCtlMessage,
+  exportCalendarIcs,
+  computeCreatorStreak,
+  generateCreatorMediaKit,
+  exportWorkspaceBundle,
+  validateWorkspaceBundle,
 };
 
 if (typeof module !== 'undefined' && module.exports) {
