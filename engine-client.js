@@ -168,9 +168,11 @@ function clipText(text, max) {
   return clean.length > max ? clean.slice(0, max - 1).trimEnd() + '…' : clean;
 }
 
-function voiceToAuthority(voiceTranscript, proofAssetTitle = 'Q3 Executive Metric Deck.xlsx') {
+function voiceToAuthority(voiceTranscript, proofAssetTitle = 'Q3 Executive Metric Deck.xlsx', options = {}) {
   const clean = String(voiceTranscript || '').replace(/\s+/g, ' ').trim();
   const source = String(proofAssetTitle || 'your proof asset').trim();
+  const tone = ['authority', 'punchy', 'story'].includes(options.tone) ? options.tone : 'authority';
+  const audience = String(options.audience || 'your peers').trim() || 'your peers';
   if (!clean) {
     return {
       linkedinPost: 'Start with one specific result from this week: what changed, by how much, and for whom? Add the proof asset, then explain the one decision that made the result possible. Specific evidence builds more authority than generic advice.',
@@ -185,6 +187,30 @@ function voiceToAuthority(voiceTranscript, proofAssetTitle = 'Q3 Executive Metri
   }
   const hook = clipText(clean.charAt(0).toUpperCase() + clean.slice(1), 190);
   const short = clipText(clean, 95);
+  if (tone === 'punchy') {
+    return {
+      linkedinPost: `${hook}\n\nNo blank page. No ghostwriter wait.\n\nCapture the result. Attach ${source}. Publish the lesson.\n\nFor ${audience}, the useful takeaway is simple: document the decision that made the outcome repeatable, not just the outcome itself.\n\nWhat proof do you have from this week?`,
+      carouselSlides: [
+        `Slide 1 — Result: ${short}`,
+        'Slide 2 — Decision: the one change that made it happen. No filler.',
+        `Slide 3 — Receipts: ${source}. Show the number or the screenshot.`,
+        `Slide 4 — For ${audience}: save this, then document your next result the same way.`,
+      ],
+      shortVideoHook: `${short} Proof: ${source}. Here is the 20-second version for ${audience}.`,
+    };
+  }
+  if (tone === 'story') {
+    return {
+      linkedinPost: `${hook}\n\nI almost left this as another unfinished voice note.\n\nInstead, I captured the decision behind the result and attached the evidence from ${source}.\n\nFor ${audience}, that is the part worth sharing: not a polished origin story, but a useful moment from real work.\n\nHere is the framework I am keeping: capture the insight, attach the proof, publish the lesson. What would your version look like?`,
+      carouselSlides: [
+        `Slide 1 — The moment: ${short}`,
+        'Slide 2 — The hesitation: why this almost stayed in a voice memo.',
+        `Slide 3 — The evidence: ${source}, and what it taught me.`,
+        `Slide 4 — For ${audience}: one small story from your week is enough. Start there.`,
+      ],
+      shortVideoHook: `I almost did not post this: ${short} Here is the evidence from ${source}, and why I am sharing it with ${audience}.`,
+    };
+  }
   return {
     linkedinPost: `${hook}\n\nThe useful part was not another tool. It was one repeatable rhythm:\n\n1. Capture the insight while it is fresh.\n2. Attach the evidence (${source}).\n3. Publish once, then reuse the same proof in a carousel and a short video.\n\nLess time formatting. More time sharing work that already happened.\n\nWhat is one result from this week that your audience could learn from?`,
     carouselSlides: [
@@ -468,10 +494,10 @@ function createDualCheckoutSession(input = {}) {
     stripeLive: Boolean(plan.stripePaymentLink),
     eftBankDetails: {
       accountName: 'Aurelia Systems (ABN 61 794 639 443)',
-      bsb: '772-772',
-      accountNumber: '106175078',
+      bsb: 'Supplied on verified corporate remittance request',
+      accountNumber: 'Email velvet.cadence.os@gmail.com for EFT instructions',
       reference: inv.invoiceNumber,
-      paymentTerms: 'Immediate activation upon remittance advice or PO sign-off',
+      paymentTerms: 'EFT bank details are issued directly after purchase-order or corporate email verification.',
     },
     affiliateSplitNote: provider === 'lemonsqueezy'
       ? 'Lemon Squeezy MoR automatically calculates global VAT/GST/Sales Tax and auto-splits 25%–35% recurring affiliate payouts.'

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aurelia-os-v4';
+const CACHE_NAME = 'aurelia-os-v6';
 // Paths are declared site-relative ("/workspace.html") and resolved against this
 // service worker's own scope, so the same file works at a domain root (local
 // Node server) and under a sub-path deploy (e.g. GitHub Pages project sites).
@@ -14,6 +14,9 @@ const ASSETS = [
   '/outreach.html',
   '/outreach-engine.js',
   '/outreach-app.js',
+  '/privacy.html',
+  '/terms.html',
+  '/refunds.html',
   '/engine-client.js',
   '/app.js',
   '/manifest.json',
