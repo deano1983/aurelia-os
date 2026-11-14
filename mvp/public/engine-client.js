@@ -284,7 +284,7 @@ const PRICING_PLANS = {
     billingCycle: 'Monthly (B2B Corporate Expensable)',
     glCategory: 'Professional Development / Executive Communications & PR Software',
     features: 'Voice-to-Authority Studio + Cloud Proof Picker + 4-Slide Carousel Briefs',
-    stripePaymentLink: 'https://buy.stripe.com/cNicN43Xq0W41dE1dp8Ra02',
+    stripePaymentLink: 'https://buy.stripe.com/7sY14m51ueMU7C28FR8Ra04',
   },
   velvet_pro: {
     id: 'velvet_pro',
