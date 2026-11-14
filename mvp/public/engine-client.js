@@ -163,17 +163,37 @@ function cascadeReschedule(items, shiftHours = 24) {
   return { items: updated, shiftedCount };
 }
 
+function clipText(text, max) {
+  const clean = String(text || '').replace(/\s+/g, ' ').trim();
+  return clean.length > max ? clean.slice(0, max - 1).trimEnd() + '…' : clean;
+}
+
 function voiceToAuthority(voiceTranscript, proofAssetTitle = 'Q3 Executive Metric Deck.xlsx') {
-  const clean = String(voiceTranscript || '').trim();
+  const clean = String(voiceTranscript || '').replace(/\s+/g, ' ').trim();
+  const source = String(proofAssetTitle || 'your proof asset').trim();
+  if (!clean) {
+    return {
+      linkedinPost: 'Start with one specific result from this week: what changed, by how much, and for whom? Add the proof asset, then explain the one decision that made the result possible. Specific evidence builds more authority than generic advice.',
+      carouselSlides: [
+        'Slide 1 — The result: state the measurable outcome in one sentence.',
+        'Slide 2 — The decision: name the one workflow change that caused it.',
+        `Slide 3 — The proof: attach the chart, screenshot or metric from ${source}.`,
+        'Slide 4 — The takeaway: give your audience one action to repeat this week.',
+      ],
+      shortVideoHook: `Do not start with a blank page. Name one result you achieved this week, show the evidence from ${source}, and explain the decision that made it repeatable.`,
+    };
+  }
+  const hook = clipText(clean.charAt(0).toUpperCase() + clean.slice(1), 190);
+  const short = clipText(clean, 95);
   return {
-    linkedinPost: `${clean}\n\nWhat we are seeing across the numbers right now (pulled straight from ${proofAssetTitle}):\n• Execution speed compounds when your team stops fighting fragmented tools.\n• Protect your deep-work and authority windows like board meetings.\n\nHow are you structuring your week to protect high-leverage output?`,
+    linkedinPost: `${hook}\n\nThe useful part was not another tool. It was one repeatable rhythm:\n\n1. Capture the insight while it is fresh.\n2. Attach the evidence (${source}).\n3. Publish once, then reuse the same proof in a carousel and a short video.\n\nLess time formatting. More time sharing work that already happened.\n\nWhat is one result from this week that your audience could learn from?`,
     carouselSlides: [
-      `Slide 1 (Hook): ${clean.slice(0, 90)}...`,
-      `Slide 2 (The Data): Key breakdown from ${proofAssetTitle}`,
-      `Slide 3 (The Shift): Moving from fragmented clouds to one command rhythm`,
-      `Slide 4 (Takeaway): 3 rules for high-output women in leadership`,
+      `Slide 1 — The result: ${short}`,
+      'Slide 2 — What drove it: explain the single workflow change in your own words. Keep the detail that makes it credible.',
+      `Slide 3 — The proof: ${source}. Add the chart, screenshot or metric that verifies the claim.`,
+      'Slide 4 — Try this week: capture one result, attach one proof asset, publish once. Save this framework for your next post.',
     ],
-    shortVideoHook: `POV: You have 4 minutes between a board report on Windows and filming on your iPhone — here is the exact insight from ${proofAssetTitle}.`,
+    shortVideoHook: `One result, 90 seconds, no blank-page writing: ${short} Here is the evidence from ${source} — and the exact workflow I would repeat next week.`,
   };
 }
 
@@ -448,8 +468,8 @@ function createDualCheckoutSession(input = {}) {
     stripeLive: Boolean(plan.stripePaymentLink),
     eftBankDetails: {
       accountName: 'Aurelia Systems (ABN 61 794 639 443)',
-      bsb: '062-948',
-      accountNumber: '72448917',
+      bsb: '772-772',
+      accountNumber: '106175078',
       reference: inv.invoiceNumber,
       paymentTerms: 'Immediate activation upon remittance advice or PO sign-off',
     },

@@ -93,6 +93,12 @@ const server = http.createServer(async (req, res) => {
       state.assets.unshift(a);
       return send(res, 201, { asset: a, ...buildStatePayload() });
     }
+    if (req.method === 'POST' && u.pathname === '/api/items') {
+      const b = await readBody(req);
+      const item = engine.createCommandItem({ ...b, id: 'cmd_' + Date.now() });
+      state.items.push(item);
+      return send(res, 201, { item, ...buildStatePayload() });
+    }
     if (req.method === 'POST' && u.pathname === '/api/handoff') {
       const b = await readBody(req);
       const item = state.items.find((i) => i.id === b.itemId) || state.items[0];

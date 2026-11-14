@@ -72,6 +72,16 @@ test('Velvet Cadence Voice-to-Authority: transforms voice note + cloud proof ass
   assert.ok(out.shortVideoHook.includes('OneDrive_Q3_Margin_Report.xlsx'));
 });
 
+test('Velvet Cadence v1.1: content output is specific, actionable and handles an empty voice note', () => {
+  const out = engine.voiceToAuthority('We reduced client onboarding from ten days to two by assigning one proof owner.', 'Onboarding_Time_Study.xlsx');
+  assert.ok(out.linkedinPost.includes('Attach the evidence'));
+  assert.ok(!out.linkedinPost.includes('Execution speed compounds'));
+  assert.ok(out.carouselSlides[2].includes('Onboarding_Time_Study.xlsx'));
+  const empty = engine.voiceToAuthority('', 'Proof.pdf');
+  assert.ok(empty.linkedinPost.includes('one specific result'));
+  assert.equal(empty.carouselSlides.length, 4);
+});
+
 test('Assisted 2-Tap Native Handoff: resolves icloud://, onedrive://, and gdrive:// deep-link packets for IG Reels, TikTok, LinkedIn, and Board Deck', () => {
   const demo = engine.getInitialDemoState();
   const reelItem = demo.items[1];
@@ -168,7 +178,7 @@ test('Dual-Provider Checkout Engine: generates Stripe Direct, Lemon Squeezy MoR 
   assert.equal(s2.amountAud, 399);
   assert.equal(s2.provider, 'lemonsqueezy');
   assert.equal(typeof s2.lemonSqueezyCheckoutUrl, 'undefined');
-  assert.equal(s1.eftBankDetails.bsb, '062-948');
+  assert.equal(s1.eftBankDetails.bsb, '772-772');
 });
 
 

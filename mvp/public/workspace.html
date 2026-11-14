@@ -82,6 +82,7 @@ code{word-break:break-all;background:#e2e8f0;padding:2px 5px;border-radius:4px;f
 </div>
 
 <div class="wrap">
+  <div id="releasePanel"></div>
   <div id="modeBanner" class="mode-banner"></div>
   <div id="kpiStrip" class="kpi-strip"></div>
   <div id="collisionBox"></div>
@@ -92,6 +93,24 @@ code{word-break:break-all;background:#e2e8f0;padding:2px 5px;border-radius:4px;f
         <span id="timelineTitle">Unified Daily Command Timeline (Reports, Uploads &amp; Life)</span>
         <span class="badge" id="timelineCountBadge">4 Active</span>
       </h2>
+      <div class="card" style="background:#f0fdf4;border-color:#15803d">
+        <div style="font-size:14px;color:#166534;margin-bottom:8px">+ Add your own deadline or publishing slot</div>
+        <div class="form-grid">
+          <input id="newItemTitle" type="text" placeholder="e.g. Publish Q4 client result on LinkedIn">
+          <select id="newItemDomain">
+            <option value="creator">Creator / LinkedIn</option>
+            <option value="executive">Executive / Board</option>
+            <option value="personal">Personal / Life</option>
+          </select>
+          <select id="newItemType">
+            <option value="content_upload">Flexible content upload</option>
+            <option value="report_deadline">Hard report deadline</option>
+            <option value="life_event">Protected life event</option>
+          </select>
+          <input id="newItemDue" type="datetime-local" aria-label="Due date and time">
+        </div>
+        <button class="gold sm" onclick="addCommandItem()">+ Add to my timeline</button>
+      </div>
       <div id="timeline"></div>
     </div>
 
