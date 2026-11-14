@@ -129,6 +129,11 @@ function computeClientPayload(stateObj) {
 }
 
 async function fetchState() {
+  const isLocalServer = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname || '');
+  if (!isLocalServer) {
+    serverOnline = false;
+    return computeClientPayload(localState);
+  }
   try {
     const res = await fetch('/api/state', { headers: { Accept: 'application/json' } });
     if (res.ok) {
