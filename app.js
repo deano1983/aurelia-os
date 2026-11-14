@@ -1,8 +1,39 @@
 /* global AureliaEngine */
 'use strict';
 
+const WORKSPACE_STORAGE_KEY = 'aurelia.workspace.v1';
+const TRIAL_STORAGE_KEY = 'aurelia.trial.v1';
+
+function readStoredWorkspace() {
+  try {
+    const data = JSON.parse(localStorage.getItem(WORKSPACE_STORAGE_KEY) || 'null');
+    if (data && Array.isArray(data.assets) && Array.isArray(data.items)) return data;
+  } catch (_) {}
+  return null;
+}
+
+function persistWorkspace() {
+  try {
+    localStorage.setItem(WORKSPACE_STORAGE_KEY, JSON.stringify({ assets: localState.assets, items: localState.items }));
+  } catch (_) {}
+}
+
+function clearStoredWorkspace() {
+  try { localStorage.removeItem(WORKSPACE_STORAGE_KEY); } catch (_) {}
+}
+
+function readTrial() {
+  try { return JSON.parse(localStorage.getItem(TRIAL_STORAGE_KEY) || 'null'); } catch (_) { return null; }
+}
+
+function startTrial() {
+  try { localStorage.setItem(TRIAL_STORAGE_KEY, JSON.stringify({ startedAt: Date.now() })); } catch (_) {}
+  showToast('Your 7-day trial started — no card required.');
+  renderReleasePanel();
+}
+
 let mode = 'all';
-let localState = AureliaEngine.getInitialDemoState();
+let localState = readStoredWorkspace() || AureliaEngine.getInitialDemoState();
 let lastVoiceBundle = null;
 let serverOnline = false;
 
@@ -83,6 +114,7 @@ async function fetchState() {
       if (data && Array.isArray(data.assets) && Array.isArray(data.items)) {
         serverOnline = true;
         localState = { assets: data.assets, items: data.items };
+        persistWorkspace();
         return computeClientPayload(localState);
       }
     }
@@ -127,8 +159,39 @@ function populateProofSelect(assets) {
     select.value = current;
   }
 }
+function renderReleasePanel() {
+  const el = document.getElementById('releasePanel');
+  if (!el) return;
+  const params = new URLSearchParams(window.location.search);
+  const checkout = params.get('checkout');
+  if (checkout === 'success') {
+    const invoice = params.get('inv') || 'your Stripe receipt';
+    el.innerHTML = `<div class="ok-banner" style="border-width:3px"><div><b>Stripe checkout complete.</b> To activate your paid tier, forward <b>${invoice}</b> and your receipt to <b>velvet.cadence.os@gmail.com</b>. You will receive activation confirmation and next steps. Your saved workspace stays on this device.</div></div>`;
+    return;
+  }
+  if (checkout === 'cancel') {
+    el.innerHTML = '<div class="warn"><div>Checkout was cancelled. Your trial and saved workspace are unchanged. Choose a plan below whenever you are ready.</div></div>';
+    return;
+  }
+  const trial = readTrial();
+  let daysLeft = null;
+  if (trial && Number(trial.startedAt)) {
+    const elapsed = Math.floor((Date.now() - Number(trial.startedAt)) / 86400000);
+    daysLeft = Math.max(0, 7 - elapsed);
+  }
+  const status = daysLeft === null ? 'START FREE' : daysLeft > 0 ? `${daysLeft} DAY${daysLeft === 1 ? '' : 'S'} LEFT` : 'TRIAL ENDED';
+  const action = daysLeft === null
+    ? '<button class="gold sm" onclick="startTrial()">Start my 7 days — no card</button>'
+    : '<a class="deck-link" href="#b2bPanel">Choose a plan &rarr;</a>';
+  el.innerHTML = `<div class="mode-banner" style="background:#f0fdf4;border:2px solid #15803d;color:#166534;margin-bottom:16px">` +
+    `<div><div style="font-size:16px;font-weight:900">Velvet Cadence v1.1 · ${status}</div>` +
+    `<div style="font-size:13px">Your assets and deadlines now persist on this device. No account needed for the trial.</div></div>` +
+    `<div style="display:flex;gap:8px;flex-wrap:wrap">${action}</div></div>`;
+}
+
 async function render() {
   const r = await fetchState();
+  renderReleasePanel();
   const meta = MODE_META[mode] || MODE_META.all;
 
   document.getElementById('modeBanner').innerHTML =
@@ -202,17 +265,20 @@ async function cascade() {
   const data = await postApi('/api/cascade');
   if (data && Array.isArray(data.items)) {
     localState.items = data.items;
+    persistWorkspace();
     showToast('Cascaded flexible creator uploads +24h — Hard deadlines protected!');
     await render();
     return;
   }
   const r = AureliaEngine.cascadeReschedule(localState.items, 24);
   localState.items = r.items;
+  persistWorkspace();
   showToast(`Cascaded ${r.shiftedCount} flexible item(s) +24h!`);
   await render();
 }
 
 async function resetDemo() {
+  clearStoredWorkspace();
   const data = await postApi('/api/reset');
   if (data && Array.isArray(data.items)) {
     localState = { assets: data.assets, items: data.items };
@@ -242,6 +308,7 @@ async function addAssetPointer() {
   if (data) {
     if (Array.isArray(data.assets)) localState.assets = data.assets;
     else if (data.id) localState.assets.unshift(data);
+    persistWorkspace();
     showToast(`Indexed ${payload.rawSizeMb} MB cloud asset with 12 KB pointer ($0.00 egress)!`);
     await render();
     return;
@@ -249,7 +316,48 @@ async function addAssetPointer() {
 
   const pointer = AureliaEngine.createCloudPointer(payload);
   localState.assets.unshift(pointer);
+  persistWorkspace();
   showToast(`Indexed ${pointer.rawSizeMb} MB cloud asset with 12 KB pointer ($0.00 egress)!`);
+  await render();
+}
+
+async function addCommandItem() {
+  const titleEl = document.getElementById('newItemTitle');
+  const title = titleEl ? titleEl.value.trim() : '';
+  if (!title) {
+    showToast('Name the deadline or publishing slot first.');
+    if (titleEl) titleEl.focus();
+    return;
+  }
+  const domain = document.getElementById('newItemDomain').value;
+  const itemType = document.getElementById('newItemType').value;
+  const dueValue = document.getElementById('newItemDue').value;
+  let dueAt;
+  try {
+    dueAt = dueValue ? new Date(dueValue).toISOString() : new Date(Date.now() + 86400000).toISOString();
+  } catch (_) {
+    showToast('Choose a valid due date and time.');
+    return;
+  }
+  const payload = {
+    title,
+    domain,
+    itemType,
+    dueAt,
+    channel: 'My workspace',
+    isHardDeadline: itemType !== 'content_upload',
+    captionOrBrief: 'Created in my Velvet Cadence workspace.',
+    linkedAssetIds: [],
+  };
+  const data = await postApi('/api/items', payload);
+  if (data && Array.isArray(data.items)) {
+    localState.items = data.items;
+  } else {
+    localState.items.push(AureliaEngine.createCommandItem({ ...payload, id: 'cmd_' + Date.now() }));
+  }
+  persistWorkspace();
+  titleEl.value = '';
+  showToast('Added to your timeline and saved on this device.');
   await render();
 }
 async function runVoice() {
@@ -474,6 +582,8 @@ window.setMode = setMode;
 window.cascade = cascade;
 window.resetDemo = resetDemo;
 window.addAssetPointer = addAssetPointer;
+window.addCommandItem = addCommandItem;
+window.startTrial = startTrial;
 window.runVoice = runVoice;
 window.copyVoicePart = copyVoicePart;
 window.copyText = copyText;
